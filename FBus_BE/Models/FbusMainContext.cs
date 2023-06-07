@@ -82,6 +82,7 @@ public partial class FbusMainContext : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false);
             entity.Property(e => e.Color).HasMaxLength(20);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.DateOfRegistration).HasColumnType("date");
             entity.Property(e => e.LicensePlate)
                 .HasMaxLength(9)
@@ -103,6 +104,9 @@ public partial class FbusMainContext : DbContext
 
             entity.ToTable("BusTrip");
 
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.EndingDate).HasColumnType("datetime");
             entity.Property(e => e.StartingDate).HasColumnType("datetime");
             entity.Property(e => e.Status)

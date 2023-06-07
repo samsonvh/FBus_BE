@@ -15,6 +15,8 @@ public partial class BusTrip
 
     public string Status { get; set; } = null!;
 
+    public DateTime CreatedDate { get; set; }
+
     public virtual ICollection<BusTripStatus> BusTripStatuses { get; set; } = new List<BusTripStatus>();
 
     public virtual Coordination? Coordination { get; set; }
