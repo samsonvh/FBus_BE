@@ -85,3 +85,5 @@ D:\Documents\FU\SUMMER2023\SWP391\FBus_BE\FBus_BE\FBus_BE\obj\Debug\net6.0\refin
 D:\Documents\FU\SUMMER2023\SWP391\FBus_BE\FBus_BE\FBus_BE\obj\Debug\net6.0\FBus_BE.pdb
 D:\Documents\FU\SUMMER2023\SWP391\FBus_BE\FBus_BE\FBus_BE\obj\Debug\net6.0\FBus_BE.genruntimeconfig.cache
 D:\Documents\FU\SUMMER2023\SWP391\FBus_BE\FBus_BE\FBus_BE\obj\Debug\net6.0\ref\FBus_BE.dll
+D:\Documents\FU\SUMMER2023\SWP391\FBus_BE\FBus_BE\FBus_BE\bin\Debug\net6.0\AutoMapper.dll
+D:\Documents\FU\SUMMER2023\SWP391\FBus_BE\FBus_BE\FBus_BE\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll

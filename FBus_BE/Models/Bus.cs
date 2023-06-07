@@ -25,6 +25,8 @@ public partial class Bus
 
     public string Status { get; set; } = null!;
 
+    public DateTime? CreatedDate { get; set; }
+
     public virtual ICollection<Coordination> Coordinations { get; set; } = new List<Coordination>();
 
     public virtual Account? CreatedBy { get; set; }
