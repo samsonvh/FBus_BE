@@ -17,6 +17,9 @@ namespace FBus_BE.Mapper
 
             CreateMap<Models.Route, RouteDto>();
             CreateMap<RouteDto, Models.Route>();
+
+            CreateMap<Station, StationDto>();
+            CreateMap<StationDto, Station>();
         }
     }
 }
