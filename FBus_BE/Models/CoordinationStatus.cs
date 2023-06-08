@@ -9,7 +9,7 @@ public partial class CoordinationStatus
 
     public short? CoordinationId { get; set; }
 
-    public short? DriverId { get; set; }
+    public short? CreatedById { get; set; }
 
     public string OriginalStatus { get; set; } = null!;
 
@@ -23,5 +23,5 @@ public partial class CoordinationStatus
 
     public virtual Coordination? Coordination { get; set; }
 
-    public virtual Driver? Driver { get; set; }
+    public virtual Account? CreatedBy { get; set; }
 }

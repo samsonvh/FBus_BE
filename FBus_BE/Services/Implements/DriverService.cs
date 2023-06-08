@@ -26,37 +26,45 @@ namespace FBus_BE.Services.Implements
         }
         public async Task<PageResponse<DriverListingDTO>> GetDriversWithPaging(DriverPageRequest pageRequest)
         {
-            int skippedCount = (pageRequest.PageNumber - 1) * pageRequest.PageSize;
-            int driverCount = await _context.Drivers
-                                   .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
-                                   .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
-                                   .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
-                                   .Select(driver => _mapper.Map<DriverDTO>(driver))
-                                   .CountAsync();
-            List<DriverListingDTO> drivers = pageRequest.Direction == "desc"
-                ? await _context.Drivers.Skip(skippedCount)
-                                   .Take(pageRequest.PageSize)
-                                   .OrderByDescending(orderDict[pageRequest.OrderBy])
-                                   .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
-                                   .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
-                                   .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
-                                   .Select(driver => _mapper.Map<DriverListingDTO>(driver))
-                                   .ToListAsync()
-                : await _context.Drivers.Skip(skippedCount)
-                                   .Take(pageRequest.PageSize)
-                                   .OrderBy(orderDict[pageRequest.OrderBy])
-                                   .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
-                                   .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
-                                   .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
-                                   .Select(driver => _mapper.Map<DriverListingDTO>(driver))
-                                   .ToListAsync();
-            return new PageResponse<DriverListingDTO>
+            if (pageRequest != null)
             {
-                Items = drivers,
-                PageIndex = pageRequest.PageNumber,
-                PageCount = (driverCount / pageRequest.PageSize) + 1,
-                PageSize = pageRequest.PageSize
-            };
+                int skippedCount = (pageRequest.PageNumber - 1) * pageRequest.PageSize;
+                int driverCount = await _context.Drivers
+                                       .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
+                                       .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
+                                       .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
+                                       .Select(driver => _mapper.Map<DriverDTO>(driver))
+                                       .CountAsync();
+                if(pageRequest.OrderBy == null)
+                {
+                    pageRequest.OrderBy = "id";
+                }
+                List<DriverListingDTO> drivers = pageRequest.Direction == "desc"
+                    ? await _context.Drivers.Skip(skippedCount)
+                                       .Take(pageRequest.PageSize)
+                                       .OrderByDescending(orderDict[pageRequest.OrderBy])
+                                       .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
+                                       .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
+                                       .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
+                                       .Select(driver => _mapper.Map<DriverListingDTO>(driver))
+                                       .ToListAsync()
+                    : await _context.Drivers.Skip(skippedCount)
+                                       .Take(pageRequest.PageSize)
+                                       .OrderBy(orderDict[pageRequest.OrderBy])
+                                       .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
+                                       .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
+                                       .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
+                                       .Select(driver => _mapper.Map<DriverListingDTO>(driver))
+                                       .ToListAsync();
+                return new PageResponse<DriverListingDTO>
+                {
+                    Items = drivers,
+                    PageIndex = pageRequest.PageNumber,
+                    PageCount = (driverCount / pageRequest.PageSize) + 1,
+                    PageSize = pageRequest.PageSize
+                };
+            }
+            return null;
         }
         public async Task<DriverDTO> GetDriverDetails(int id)
         {
