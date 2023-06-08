@@ -82,7 +82,7 @@ namespace FBus_BE.Controllers
 
         }
 
-        [HttpPut("activate/{id}")]
+        [HttpPut("activations/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ActivateDriver(short id)
@@ -95,7 +95,7 @@ namespace FBus_BE.Controllers
             return Ok(active);
         }
 
-        [HttpPut("deactive/{id}")]
+        [HttpPut("deactivations/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeactivateDriver(short id)

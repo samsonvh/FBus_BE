@@ -269,8 +269,8 @@ public partial class FbusMainContext : DbContext
                 .HasForeignKey(d => d.RouteId)
                 .HasConstraintName("FK__RouteStat__Route__3A81B327");
 
-            entity.HasOne(d => d.StationNavigation).WithMany(p => p.RouteStations)
-                .HasForeignKey(d => d.Station)
+            entity.HasOne(d => d.Station).WithMany(p => p.RouteStations)
+                .HasForeignKey(d => d.StationId)
                 .HasConstraintName("FK__RouteStat__Stati__3B75D760");
         });
 

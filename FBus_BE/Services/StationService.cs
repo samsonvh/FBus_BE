@@ -14,9 +14,10 @@ namespace FBus_BE.Services
         {
             _stationRepository = stationRepository;
         }
-        public Task<bool> active(short id)
+        public async Task<bool> active(short id)
         {
-            throw new NotImplementedException();
+            var activeStation = await _stationRepository.active(id);
+            return activeStation;
         }
 
         public Task<Station> Create(Station station)
@@ -24,9 +25,10 @@ namespace FBus_BE.Services
             return _stationRepository.Create(station);
         }
 
-        public Task<bool> deactive(short id)
+        public async Task<bool> deactive(short id)
         {
-            throw new NotImplementedException();
+            var deactiveStation = await _stationRepository.deactive(id);
+            return deactiveStation;
         }
 
         public async Task<IEnumerable<Station>> GetAllStation()

@@ -15,9 +15,15 @@ namespace FBus_BE.Repository
         {
             _context = context;
         }
-        public Task<bool> active(short id)
+        public async Task<bool> active(short id)
         {
-            throw new NotImplementedException();
+            var station = await _context.Stations.FindAsync(id);
+            if (station == null)
+                return false;
+
+            station.Status = "ACTIVE";
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<Station> Create(Station station)
@@ -27,9 +33,15 @@ namespace FBus_BE.Repository
             return station;
         }
 
-        public Task<bool> deactive(short id)
+        public async Task<bool> deactive(short id)
         {
-            throw new NotImplementedException();
+            var station = await _context.Stations.FindAsync(id);
+            if (station == null)
+                return false;
+
+            station.Status = "INACTIVE";
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<IEnumerable<Station>> GetAllStation()

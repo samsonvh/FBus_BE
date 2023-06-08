@@ -62,5 +62,27 @@ namespace FBus_BE.Controllers
 
             return CreatedAtAction(nameof(GetStationById), new { id = newStationDto.Id }, newStationDto);
         }
+
+        [HttpPut("activation/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Active(short id)
+        {
+            bool isActivated = await _stationService.active(id);
+            if (!isActivated)
+                return BadRequest();
+            return Ok(isActivated);
+        }
+
+        [HttpPut("deactivate/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Deactive(short id)
+        {
+            bool isDeactivated = await _stationService.deactive(id);
+            if (!isDeactivated)
+                return BadRequest();
+            return Ok(isDeactivated);
+        }
     }
 }
