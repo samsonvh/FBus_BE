@@ -195,8 +195,8 @@ public partial class FbusMainContext : DbContext
                 .HasForeignKey(d => d.CoordinationId)
                 .HasConstraintName("FK__Coordinat__Coord__571DF1D5");
 
-            entity.HasOne(d => d.Driver).WithMany(p => p.CoordinationStatuses)
-                .HasForeignKey(d => d.DriverId)
+            entity.HasOne(d => d.CreatedBy).WithMany(p => p.CoordinationStatuses)
+                .HasForeignKey(d => d.CreatedById)
                 .HasConstraintName("FK__Coordinat__Drive__5812160E");
         });
 
@@ -235,9 +235,13 @@ public partial class FbusMainContext : DbContext
                 .HasMaxLength(15)
                 .IsUnicode(false);
 
-            entity.HasOne(d => d.Account).WithMany(p => p.Drivers)
+            entity.HasOne(d => d.Account).WithMany(p => p.DriverAccounts)
                 .HasForeignKey(d => d.AccountId)
                 .HasConstraintName("FK__Driver__AccountI__3C69FB99");
+
+            entity.HasOne(d => d.CreatedBy).WithMany(p => p.DriverCreatedBies)
+                .HasForeignKey(d => d.CreatedById)
+                .HasConstraintName("FK__Driver__CreatedB__6E01572D");
         });
 
         modelBuilder.Entity<Route>(entity =>
@@ -270,8 +274,8 @@ public partial class FbusMainContext : DbContext
                 .HasForeignKey(d => d.RouteId)
                 .HasConstraintName("FK__RouteStat__Route__4D94879B");
 
-            entity.HasOne(d => d.StationNavigation).WithMany(p => p.RouteStations)
-                .HasForeignKey(d => d.Station)
+            entity.HasOne(d => d.Station).WithMany(p => p.RouteStations)
+                .HasForeignKey(d => d.StationId)
                 .HasConstraintName("FK__RouteStat__Stati__4E88ABD4");
         });
 

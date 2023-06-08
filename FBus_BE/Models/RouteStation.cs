@@ -9,11 +9,11 @@ public partial class RouteStation
 
     public short? RouteId { get; set; }
 
-    public short? Station { get; set; }
+    public short? StationId { get; set; }
 
     public byte StationOrder { get; set; }
 
     public virtual Route? Route { get; set; }
 
-    public virtual Station? StationNavigation { get; set; }
+    public virtual Station? Station { get; set; }
 }

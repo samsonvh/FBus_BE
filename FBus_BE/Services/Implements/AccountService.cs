@@ -27,25 +27,33 @@ namespace FBus_BE.Services.Implements
 
         public async Task<PageResponse<AccountDTO>> GetAccountsWithPaging(PageRequest pageRequest)
         {
-            int skippedCount = (pageRequest.PageNumber - 1) * pageRequest.PageSize;
-            List<AccountDTO> accounts = pageRequest.Direction == "desc"
-                ? await _context.Accounts.Skip(skippedCount)
-                                   .Take(pageRequest.PageSize)
-                                   .OrderByDescending(orderDict[pageRequest.OrderBy])
-                                   .Select(account => _mapper.Map<AccountDTO>(account))
-                                   .ToListAsync()
-                : await _context.Accounts.Skip(skippedCount)
-                                   .Take(pageRequest.PageSize)
-                                   .OrderBy(orderDict[pageRequest.OrderBy])
-                                   .Select(account => _mapper.Map<AccountDTO>(account))
-                                   .ToListAsync();
-            return new PageResponse<AccountDTO>
+            if (pageRequest != null)
             {
-                Items = accounts,
-                PageIndex = pageRequest.PageNumber,
-                PageCount = (_context.Accounts.Count() / pageRequest.PageSize) + 1,
-                PageSize = pageRequest.PageSize
-            };
+                if(pageRequest.OrderBy == null)
+                {
+                    pageRequest.OrderBy = "id";
+                }
+                int skippedCount = (pageRequest.PageNumber - 1) * pageRequest.PageSize;
+                List<AccountDTO> accounts = pageRequest.Direction == "desc"
+                    ? await _context.Accounts.Skip(skippedCount)
+                                       .Take(pageRequest.PageSize)
+                                       .OrderByDescending(orderDict[pageRequest.OrderBy])
+                                       .Select(account => _mapper.Map<AccountDTO>(account))
+                                       .ToListAsync()
+                    : await _context.Accounts.Skip(skippedCount)
+                                       .Take(pageRequest.PageSize)
+                                       .OrderBy(orderDict[pageRequest.OrderBy])
+                                       .Select(account => _mapper.Map<AccountDTO>(account))
+                                       .ToListAsync();
+                return new PageResponse<AccountDTO>
+                {
+                    Items = accounts,
+                    PageIndex = pageRequest.PageNumber,
+                    PageCount = (_context.Accounts.Count() / pageRequest.PageSize) + 1,
+                    PageSize = pageRequest.PageSize
+                };
+            }
+            return null;
         }
 
         public async Task<AccountDTO> GetAccountDetails(int id)

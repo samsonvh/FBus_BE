@@ -10,11 +10,11 @@ namespace FBus_BE.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DriverController : ControllerBase
+    public class DriversController : ControllerBase
     {
         private readonly IDriverService _driverService;
 
-        public DriverController(IDriverService driverService)
+        public DriversController(IDriverService driverService)
         {
             _driverService = driverService;
         }
