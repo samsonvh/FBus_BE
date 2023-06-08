@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FBus_BE.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/stations")]
     public class StationController : ControllerBase
     {
         private readonly IStationService _stationService;

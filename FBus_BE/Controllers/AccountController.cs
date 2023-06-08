@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FBus_BE.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/accounts")]
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
@@ -43,7 +43,5 @@ namespace FBus_BE.Controllers
             var accounts = await _accountService.GetAccountById(id);
             return accounts == null ? NotFound() : Ok(accounts);
         }
-
-
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FBus_BE.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/routes")]
     [ApiController]
     public class RouteController : ControllerBase
     {

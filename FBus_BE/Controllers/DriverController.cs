@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FBus_BE.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/drivers")]
     public class DriverController : ControllerBase
     {
         private readonly IDriverService _driverService;
