@@ -29,9 +29,11 @@ public partial class Driver
 
     public string Status { get; set; } = null!;
 
+    public short? CreatedById { get; set; }
+
     public virtual Account? Account { get; set; }
 
-    public virtual ICollection<CoordinationStatus> CoordinationStatuses { get; set; } = new List<CoordinationStatus>();
-
     public virtual ICollection<Coordination> Coordinations { get; set; } = new List<Coordination>();
+
+    public virtual Account? CreatedBy { get; set; }
 }
