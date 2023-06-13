@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using FBus_BE.Data;
 using FBus_BE.Repository;
@@ -16,6 +17,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
+
 builder.Services.AddDbContext<FbusMainContext>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -34,7 +36,12 @@ builder.Services.AddScoped<IStationService, StationService>();
 //routeStation
 builder.Services.AddScoped<IRouteStationRepository, RouteStationRepository>();
 builder.Services.AddScoped<IRouteStationService, RouteStationService>();
+//bus
+builder.Services.AddScoped<IBusRepository, BusRepository>();
+builder.Services.AddScoped<IBusService, BusService>();
+
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

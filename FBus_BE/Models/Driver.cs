@@ -6,10 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace FBus_BE.Models;
 
-public partial class Driver
+public class Driver
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public short Id { get; set; }
 
     public short? AccountId { get; set; }

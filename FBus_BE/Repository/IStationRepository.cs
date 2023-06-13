@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FBus_BE.Dto;
 using FBus_BE.Models;
 
 namespace FBus_BE.Repository
@@ -16,5 +17,7 @@ namespace FBus_BE.Repository
         Task SaveChanges();
         Task<bool> deactive(short id);
         Task<bool> active(short id);
+
+        List<StationRequest> GetAll(string search);
     }
 }

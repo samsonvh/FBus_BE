@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FBus_BE.Models;
 
-public partial class Station
+public class Station
 {
+    [Key]
     public short Id { get; set; }
 
     public short? CreatedById { get; set; }
@@ -35,9 +38,9 @@ public partial class Station
 
     public string Status { get; set; } = null!;
 
-    public virtual ICollection<BusTripStatus> BusTripStatuses { get; set; } = new List<BusTripStatus>();
+    public virtual ICollection<BusTripStatus> BusTripStatuses { get; set; }
 
     public virtual Account? CreatedBy { get; set; }
 
-    public virtual ICollection<RouteStation> RouteStations { get; set; } = new List<RouteStation>();
+    public virtual ICollection<RouteStation> RouteStations { get; set; }
 }

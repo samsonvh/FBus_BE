@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FBus_BE.Dto;
 using FBus_BE.Models;
 using FBus_BE.Repository;
 
@@ -30,6 +31,7 @@ namespace FBus_BE.Services
             var deactiveStation = await _stationRepository.deactive(id);
             return deactiveStation;
         }
+
 
         public async Task<IEnumerable<Station>> GetAllStation()
         {

@@ -14,5 +14,7 @@ namespace FBus_BE.Repository
         Task SaveChanges();
         Task<bool> active(short id);
         Task<bool> deactive(short id);
+
+        Task<List<Account>> GetAccounts(int page);
     }
 }

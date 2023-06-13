@@ -20,6 +20,9 @@ namespace FBus_BE.Mapper
 
             CreateMap<Station, StationDto>();
             CreateMap<StationDto, Station>();
+
+            CreateMap<Bus, BusDto>();
+            CreateMap<BusDto, Bus>();
         }
     }
 }

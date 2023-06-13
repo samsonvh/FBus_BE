@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FBus_BE.Models;
 
-public partial class CoordinationStatus
+public class CoordinationStatus
 {
+    [Key]
     public short Id { get; set; }
 
     public short? CoordinationId { get; set; }

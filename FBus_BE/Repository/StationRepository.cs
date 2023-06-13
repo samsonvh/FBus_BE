@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FBus_BE.Data;
+using FBus_BE.Dto;
 using FBus_BE.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,6 +43,22 @@ namespace FBus_BE.Repository
             station.Status = "INACTIVE";
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public List<StationRequest> GetAll(string search)
+        {
+            var stations = _context.Stations.Where(hh => hh.Name.Contains(search));
+
+            var result = stations.Select(hh => new StationRequest
+            {
+                Id = hh.Id,
+                Name = hh.Name,
+                CreatedById = hh.CreatedById,
+                City = hh.City,
+                Latitude = hh.Latitude,
+                Longitude = hh.Longitude
+            });
+            return result.ToList();
         }
 
         public async Task<IEnumerable<Station>> GetAllStation()

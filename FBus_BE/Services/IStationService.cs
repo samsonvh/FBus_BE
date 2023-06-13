@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FBus_BE.Dto;
 using FBus_BE.Models;
 
 namespace FBus_BE.Services
@@ -15,5 +16,6 @@ namespace FBus_BE.Services
         Task SaveChanges();
         Task<bool> deactive(short id);
         Task<bool> active(short id);
+
     }
 }

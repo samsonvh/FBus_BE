@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FBus_BE.Dto;
 using FBus_BE.Models;
 using FBus_BE.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -18,17 +19,17 @@ namespace FBus_BE.Controllers
             _accountService = accountService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllAccount()
-        {
-            var accounts = await _accountService.GetAllAccount();
-            if (accounts == null)
-            {
-                return BadRequest();
-            }
+        // [HttpGet]
+        // public async Task<IActionResult> GetAllAccount()
+        // {
+        //     var accounts = await _accountService.GetAllAccount();
+        //     if (accounts == null)
+        //     {
+        //         return BadRequest();
+        //     }
 
-            return Ok(accounts);
-        }
+        //     return Ok(accounts);
+        // }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -42,6 +43,13 @@ namespace FBus_BE.Controllers
             }
             var accounts = await _accountService.GetAccountById(id);
             return accounts == null ? NotFound() : Ok(accounts);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AccountResponse>>> GetAllAccounts()
+        {
+            var accounts = await _accountService.GetAllAccount();
+            return Ok(accounts);
         }
     }
 }

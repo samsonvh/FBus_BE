@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace FBus_BE.Models;
 
-public partial class Account
+public class Account
 {
+    [Key]
     public short Id { get; set; }
 
     public string Email { get; set; } = null!;

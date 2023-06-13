@@ -39,7 +39,12 @@ namespace FBus_BE.Repository
 
         public async Task<Account> GetAccountById(short id)
         {
-            return await _context.Accounts.FindAsync(id)!;
+            return await _context.Accounts.FindAsync(id);
+        }
+
+        public async Task<List<Account>> GetAccounts(int page)
+        {
+            return await _context.Accounts.Include(p => p.Buses).ToListAsync();
         }
 
         public async Task<IEnumerable<Account>> GetAllAccount()
