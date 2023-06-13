@@ -23,8 +23,6 @@ public partial class Station
 
     public string City { get; set; } = null!;
 
-    public string Country { get; set; } = null!;
-
     public string? Image { get; set; }
 
     public float Longitude { get; set; }

@@ -294,7 +294,6 @@ public partial class FbusMainContext : DbContext
             entity.Property(e => e.Code)
                 .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Country).HasMaxLength(50);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

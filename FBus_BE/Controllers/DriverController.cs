@@ -2,7 +2,6 @@
 using FBus_BE.DTOs.PageRequests;
 using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FBus_BE.DTOs.ListingDTOs;
 
@@ -33,11 +32,11 @@ namespace FBus_BE.Controllers
             return Ok(await _driverService.GetDriverDetails(id));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDTO))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(DriverDTO))]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] DriverInputDTO driverInputDTO)
         {
-            return Ok(await _driverService.Create(driverInputDTO));
+            return CreatedAtAction(null, await _driverService.Create(driverInputDTO));
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDTO))]

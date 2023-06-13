@@ -35,7 +35,7 @@ namespace FBus_BE.Services.Implements
                                        .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
                                        .Select(driver => _mapper.Map<DriverDTO>(driver))
                                        .CountAsync();
-                if(pageRequest.OrderBy == null)
+                if (pageRequest.OrderBy == null)
                 {
                     pageRequest.OrderBy = "id";
                 }
