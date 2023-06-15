@@ -1,17 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FBus_BE.Models;
-
+using FBus_BE.DTOs;
+using FBus_BE.DTOs.InputDTOs;
+using FBus_BE.DTOs.ListingDTOs;
+using FBus_BE.DTOs.PageRequests;
 namespace FBus_BE.Services
 {
     public interface IDriverService
     {
-        Task<IEnumerable<Driver>> GetAllDriver();
-        Task<Driver> Create(Driver driver);
-        Task<Driver> GetDriverById(short id);
-        Task<bool> Active(short id);
-        Task<bool> Deactive(short id);
+        Task<PageResponse<DriverListingDTO>> GetDriversWithPaging(DriverPageRequest pageRequest);
+        Task<DriverDTO> GetDriverDetails(int id);
+        Task<DriverDTO> Create(DriverInputDTO driverInputDTO);
+        Task<DriverDTO> Update(int id, DriverInputDTO driverInputDTO);
+        Task<bool> ChangeStatus(int id, string status);
+        Task<bool> Delete(int id);
     }
 }

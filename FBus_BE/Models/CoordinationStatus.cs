@@ -5,17 +5,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FBus_BE.Models;
 
-public class CoordinationStatus
+public partial class CoordinationStatus
 {
-    [Key]
     public short Id { get; set; }
 
     public short? CoordinationId { get; set; }
 
     public short? DriverId { get; set; }
-
+    public short? CreatedById { get; set; }
     public string OriginalStatus { get; set; } = null!;
-
     public string UpdatedStatus { get; set; } = null!;
 
     public byte StatusOrder { get; set; }
@@ -27,4 +25,5 @@ public class CoordinationStatus
     public virtual Coordination? Coordination { get; set; }
 
     public virtual Driver? Driver { get; set; }
+    public virtual Account? CreatedBy { get; set; }
 }

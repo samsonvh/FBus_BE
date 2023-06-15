@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FBus_BE.Models;
+using FBus_BE.DTOs;
 
 namespace FBus_BE.Services
 {
     public interface IRouteStationService
     {
-        Task<IEnumerable<RouteStation>> GetByRouteId(short routeId);
+        Task<List<RouteStationDTO>> GetRouteStationList(int? routeId);
     }
 }

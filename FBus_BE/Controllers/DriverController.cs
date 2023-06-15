@@ -1,111 +1,63 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using FBus_BE.Dto;
-using FBus_BE.Models;
+using FBus_BE.DTOs;
+using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.Services;
 using Microsoft.AspNetCore.Mvc;
+using FBus_BE.DTOs.ListingDTOs;
 
 namespace FBus_BE.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("api/drivers")]
-    public class DriverController : ControllerBase
+    public class DriversController : ControllerBase
     {
         private readonly IDriverService _driverService;
-        private readonly IMapper _mapper;
-        public DriverController(IDriverService driverService, IMapper mapper)
+
+        public DriversController(IDriverService driverService)
         {
             _driverService = driverService;
-            _mapper = mapper;
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PageResponse<DriverListingDTO>))]
         [HttpGet]
-        public async Task<IActionResult> GetAllDriver()
+        public async Task<IActionResult> GetDriverList([FromQuery] DriverPageRequest pageRequest)
         {
-            var drivers = await _driverService.GetAllDriver();
-            if (drivers == null)
-            {
-                return BadRequest();
-            }
-            var driverDto = _mapper.Map<IEnumerable<DriverDto>>(drivers);
-            return Ok(driverDto);
+            return Ok(await _driverService.GetDriversWithPaging(pageRequest));
         }
 
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetDriverById(short id)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDTO))]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetDriverDetails([FromRoute] int id)
         {
-
-            var driver = await _driverService.GetDriverById(id);
-            if (driver == null)
-            {
-                return NotFound();
-            }
-            var driverDto = _mapper.Map<DriverDto>(driver);
-            return Ok(driverDto);
+            return Ok(await _driverService.GetDriverDetails(id));
         }
 
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(DriverDTO))]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateNewDriver([FromBody] DriverDto driverDto)
+        public async Task<IActionResult> Create([FromBody] DriverInputDTO driverInputDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            if (driverDto == null)
-            {
-                return BadRequest("Invalid Data");
-            }
-            var newDriver = _mapper.Map<Driver>(driverDto);
-            await _driverService.Create(newDriver);
-
-            var newDriverDto = new DriverDto
-            {
-                AccountId = newDriver.AccountId,
-                FullName = newDriver.FullName,
-                Gender = newDriver.Gender,
-                IdCardNumber = newDriver.IdCardNumber,
-                Address = newDriver.Address,
-                PhoneNumber = newDriver.PhoneNumber,
-                PersonalEmail = newDriver.PersonalEmail,
-                DateOfBirth = newDriver.DateOfBirth,
-                Avatar = newDriver.Avatar,
-                Status = newDriver.Status,
-            };
-            return CreatedAtAction(nameof(GetDriverById), new { id = newDriverDto.Id }, newDriverDto);
-
+            return CreatedAtAction(null, await _driverService.Create(driverInputDTO));
         }
 
-        [HttpPut("activations/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ActivateDriver(short id)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDTO))]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] DriverInputDTO driverInputDTO)
         {
-            bool active = await _driverService.Active(id);
-            if (!active)
-            {
-                return BadRequest();
-            }
-            return Ok(active);
+            return Ok(await _driverService.Update(id, driverInputDTO));
         }
 
-        [HttpPut("deactivations/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeactivateDriver(short id)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] string status)
         {
-            bool deactive = await _driverService.Deactive(id);
-            if (!deactive)
-            {
-                return BadRequest();
-            }
-            return Ok(deactive);
+            return Ok(await _driverService.ChangeStatus(id, status));
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Deactivate([FromRoute] int id)
+        {
+            return Ok(await _driverService.Delete(id));
         }
     }
 }

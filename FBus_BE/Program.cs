@@ -1,8 +1,7 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using FBus_BE.Data;
-using FBus_BE.Repository;
+using FBus_BE.Models;
 using FBus_BE.Services;
+using FBus_BE.Services.Implements;
+using FBus_BE.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,34 +11,18 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-});
-
 builder.Services.AddDbContext<FbusMainContext>();
-
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-//account
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAccountService, AccountService>();
-//driver
-builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IDriverService, DriverService>();
-//route
-builder.Services.AddScoped<IRouteRepository, RouteRepository>();
-builder.Services.AddScoped<IRouteService, RouteService>();
-//station
-builder.Services.AddScoped<IStationRepository, StationRepository>();
 builder.Services.AddScoped<IStationService, StationService>();
-//routeStation
-builder.Services.AddScoped<IRouteStationRepository, RouteStationRepository>();
+builder.Services.AddScoped<IRouteService, RouteService>();
 builder.Services.AddScoped<IRouteStationService, RouteStationService>();
-//bus
-builder.Services.AddScoped<IBusRepository, BusRepository>();
-builder.Services.AddScoped<IBusService, BusService>();
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
+// builder.Services.AddControllers().AddJsonOptions(options =>
+// {
+//     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+// });
 var app = builder.Build();
 
 

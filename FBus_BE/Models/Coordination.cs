@@ -5,9 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FBus_BE.Models;
 
-public class Coordination
+public partial class Coordination
 {
-    [Key]
     public short Id { get; set; }
 
     public short? CreatedById { get; set; }

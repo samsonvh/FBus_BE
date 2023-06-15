@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace FBus_BE.Models;
 
-public class Route
+public partial class Route
 {
-    [Key]
     public short Id { get; set; }
 
     public short? CreatedById { get; set; }

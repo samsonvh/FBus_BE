@@ -5,9 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FBus_BE.Models;
 
-public class BusTripStatus
+public partial class BusTripStatus
 {
-    [Key]
     public short Id { get; set; }
 
     public short? BusTripId { get; set; }

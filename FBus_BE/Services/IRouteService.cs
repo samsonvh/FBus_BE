@@ -1,17 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FBus_BE.Models;
+using FBus_BE.DTOs.InputDTOs;
+using FBus_BE.DTOs;
+using FBus_BE.DTOs.ListingDTOs;
+using FBus_BE.DTOs.PageRequests;
 
 namespace FBus_BE.Services
 {
     public interface IRouteService
     {
-        Task<IEnumerable<FBus_BE.Models.Route>> GetRouteList();
-        Task<Models.Route> Create(Models.Route route);
-        Task<Models.Route> GetRouteById(short id);
-        Task<bool> Active(short id);
-        Task<bool> Deactive(short id);
+        Task<PageResponse<RouteListingDTO>> GetRoutesWithPaging(RoutePageRequest pageRequest);
+        Task<RouteDTO> GetRouteDetails(int? routeId);
+        Task<RouteDTO> Create(RouteInputDTO routeInputDTO);
+        Task<RouteDTO> Update(int id, RouteInputDTO routeInputDTO);
+        Task<bool> ChangeStatus(int routeId, string status);
+        Task<bool> Deactivate(int routeId);
     }
 }
