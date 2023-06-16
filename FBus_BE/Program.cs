@@ -17,6 +17,7 @@ builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IStationService, StationService>();
 builder.Services.AddScoped<IRouteService, RouteService>();
 builder.Services.AddScoped<IRouteStationService, RouteStationService>();
+builder.Services.AddScoped<IBusService, BusService>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
 // builder.Services.AddControllers().AddJsonOptions(options =>

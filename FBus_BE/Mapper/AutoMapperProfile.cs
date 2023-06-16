@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using FBus_BE.Dto;
+using FBus_BE.DTOs;
+using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.Models;
 
 namespace FBus_BE.Mapper
@@ -21,8 +23,8 @@ namespace FBus_BE.Mapper
             CreateMap<Station, StationDto>();
             CreateMap<StationDto, Station>();
 
-            CreateMap<Bus, BusDto>();
-            CreateMap<BusDto, Bus>();
+            CreateMap<Bus, BusDTO>();
+            CreateMap<BusInputDTO, Bus>();
         }
     }
 }
