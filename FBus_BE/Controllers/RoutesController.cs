@@ -1,9 +1,7 @@
-﻿using FBus_BE.DTOs;
-using FBus_BE.DTOs.InputDTOs;
-using FBus_BE.DTOs.ListingDTOs;
+﻿using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.DTOs.PageRequests;
 using FBus_BE.Services;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FBus_BE.Controllers
@@ -19,39 +17,46 @@ namespace FBus_BE.Controllers
             _routeService = routeService;
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PageResponse<RouteListingDTO>))]
+        [Authorize("AdminOnly")]
         [HttpGet]
-        public async Task<IActionResult> GetRouteList([FromQuery] RoutePageRequest pageRequest)
+        public async Task<IActionResult> GetRouteList([FromRoute] RoutePageRequest pageRequest)
         {
-            return Ok(await _routeService.GetRoutesWithPaging(pageRequest));
+            return Ok(await _routeService.GetRouteList(pageRequest));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RouteDTO))]
+        [Authorize("AdminOnly")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetRouteDetails([FromRoute] int id)
         {
             return Ok(await _routeService.GetRouteDetails(id));
         }
 
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RouteDTO))]
+        [Authorize("AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] RouteInputDTO routeInputDTO)
         {
-            return CreatedAtAction(null, await _routeService.Create(routeInputDTO));
+            string user = User.FindFirst("Id").Value;
+            int userId = Convert.ToInt32(user);
+            return Ok(await _routeService.Create(userId, routeInputDTO));
         }
 
-        [HttpPut("{id:int}")]
+        [Authorize("AdminOnly")]
+        [HttpPut]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] RouteInputDTO routeInputDTO)
         {
-            return Ok(await _routeService.Update(id, routeInputDTO));
+            string user = User.FindFirst("Id").Value;
+            int userId = Convert.ToInt32(user);
+            return Ok(await _routeService.Update(userId, routeInputDTO, id));
         }
 
+        [Authorize("AdminOnly")]
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] string status)
         {
             return Ok(await _routeService.ChangeStatus(id, status));
         }
 
+        [Authorize("AdminOnly")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Deactivate([FromRoute] int id)
         {

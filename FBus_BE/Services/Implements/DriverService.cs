@@ -3,10 +3,10 @@ using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.DTOs.ListingDTOs;
 using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.PageResponses;
 using FBus_BE.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 
 namespace FBus_BE.Services.Implements
 {
@@ -15,98 +15,143 @@ namespace FBus_BE.Services.Implements
         private readonly Dictionary<string, Expression<Func<Driver, object?>>> orderDict;
         private readonly FbusMainContext _context;
         private readonly IMapper _mapper;
-        public DriverService(FbusMainContext context, IMapper mapper)
+        private readonly IFirebaseStorageService _storageService;
+        private const string cloudStoragePrefix = @"https://firebasestorage.googleapis.com/v0/b/fbus-388009.appspot.com/o/";
+
+        public DriverService(FbusMainContext context, IMapper mapper, IFirebaseStorageService storageService)
         {
             _context = context;
             _mapper = mapper;
-            this.orderDict = new Dictionary<string, Expression<Func<Driver, object?>>>()
+            orderDict = new Dictionary<string, Expression<Func<Driver, object?>>>
             {
-                {"id", driver => driver.Id}
+                { "id", driver => driver.Id }
             };
+            _storageService = storageService;
         }
-        public async Task<PageResponse<DriverListingDTO>> GetDriversWithPaging(DriverPageRequest pageRequest)
+
+        public async Task<DefaultPageResponse<DriverListingDTO>> GetDriverList(DriverPageRequest pageRequest)
         {
-            if (pageRequest != null)
+            DefaultPageResponse<DriverListingDTO> pageResponse = new DefaultPageResponse<DriverListingDTO>();
+            if (pageRequest.PageIndex == null)
             {
-                int skippedCount = (pageRequest.PageNumber - 1) * pageRequest.PageSize;
-                int driverCount = await _context.Drivers
-                                       .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
-                                       .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
-                                       .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
-                                       .Select(driver => _mapper.Map<DriverDTO>(driver))
-                                       .CountAsync();
-                if (pageRequest.OrderBy == null)
-                {
-                    pageRequest.OrderBy = "id";
-                }
+                pageRequest.PageIndex = 1;
+            }
+            if (pageRequest.PageSize == null)
+            {
+                pageRequest.PageSize = 10;
+            }
+            if (pageRequest.OrderBy == null)
+            {
+                pageRequest.OrderBy = "id";
+            }
+            int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
+            int totalCount = await _context.Drivers
+                                         .Where(driver => pageRequest.Code != null ? driver.Account.Code.Contains(pageRequest.Code) : true)
+                                         .Where(driver => pageRequest.Email != null ? driver.Account.Email.Contains(pageRequest.Email) : true)
+                                         .CountAsync();
+            if (totalCount > 0)
+            {
                 List<DriverListingDTO> drivers = pageRequest.Direction == "desc"
                     ? await _context.Drivers.Skip(skippedCount)
-                                       .Take(pageRequest.PageSize)
-                                       .OrderByDescending(orderDict[pageRequest.OrderBy])
-                                       .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
-                                       .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
-                                       .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
-                                       .Select(driver => _mapper.Map<DriverListingDTO>(driver))
-                                       .ToListAsync()
+                                             .OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
+                                             .Where(driver => pageRequest.Code != null ? driver.Account.Code.Contains(pageRequest.Code) : true)
+                                             .Where(driver => pageRequest.Email != null ? driver.Account.Email.Contains(pageRequest.Email) : true)
+                                             .Include(driver => driver.Account)
+                                             .Select(driver => _mapper.Map<DriverListingDTO>(driver))
+                                             .ToListAsync()
                     : await _context.Drivers.Skip(skippedCount)
-                                       .Take(pageRequest.PageSize)
-                                       .OrderBy(orderDict[pageRequest.OrderBy])
-                                       .Where(driver => pageRequest.Name != null ? driver.FullName.Contains(pageRequest.Name) : true)
-                                       .Where(driver => pageRequest.IdCardNumber != null ? driver.IdCardNumber.Contains(pageRequest.IdCardNumber) : true)
-                                       .Where(driver => pageRequest.Status != null ? driver.Status == pageRequest.Status : true)
-                                       .Select(driver => _mapper.Map<DriverListingDTO>(driver))
-                                       .ToListAsync();
-                return new PageResponse<DriverListingDTO>
-                {
-                    Items = drivers,
-                    PageIndex = pageRequest.PageNumber,
-                    PageCount = (driverCount / pageRequest.PageSize) + 1,
-                    PageSize = pageRequest.PageSize
-                };
+                                             .OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
+                                             .Where(driver => pageRequest.Code != null ? driver.Account.Code.Contains(pageRequest.Code) : true)
+                                             .Where(driver => pageRequest.Email != null ? driver.Account.Email.Contains(pageRequest.Email) : true)
+                                             .Include(driver => driver.Account)
+                                             .Select(driver => _mapper.Map<DriverListingDTO>(driver))
+                                             .ToListAsync();
+                pageResponse.Data = drivers;
             }
-            return null;
+            pageResponse.PageIndex = (int)pageRequest.PageIndex;
+            pageResponse.PageCount = (int)(totalCount / pageRequest.PageSize) + 1;
+            pageResponse.PageSize = (int)pageRequest.PageSize;
+            return pageResponse;
         }
+
         public async Task<DriverDTO> GetDriverDetails(int id)
         {
             Driver? driver = await _context.Drivers
                 .Include(driver => driver.Account)
+                .Include(driver => driver.CreatedBy)
                 .FirstOrDefaultAsync(driver => driver.Id == id);
             return _mapper.Map<DriverDTO>(driver);
         }
 
-        public async Task<DriverDTO> Create(DriverInputDTO driverInputDTO)
+        public async Task<DriverDTO> Create(DriverInputDTO driverInputDTO, int? createdById)
         {
-            Account? account = await _context.Accounts.FirstOrDefaultAsync(acc => acc.Email == driverInputDTO.Email);
+            Account? account = await _context.Accounts.FirstOrDefaultAsync(account => account.Code == driverInputDTO.Code || account.Email == driverInputDTO.Email);
             if (account == null)
             {
                 account = new Account
                 {
-                    Email = driverInputDTO.Email,
                     Code = driverInputDTO.Code,
+                    Email = driverInputDTO.Email,
                     Role = "DRIVER",
-                    Status = "ACTIVE",
+                    Status = "UNSIGNED"
                 };
                 _context.Accounts.Add(account);
-
-                Driver driver = _mapper.Map<Driver>(driverInputDTO);
-                driver.Account = account;
-                _context.Drivers.Add(driver);
-
                 await _context.SaveChangesAsync();
+                if (account.Id != null)
+                {
+                    Driver driver = _mapper.Map<Driver>(driverInputDTO);
+                    driver.AccountId = account.Id;
+                    driver.CreatedById = (short?)createdById;
+                    driver.Status = "ACTIVE";
 
-                return _mapper.Map<DriverDTO>(driver);
+                    Uri avatarUri = null;
+                    if (driverInputDTO.AvatarFile != null)
+                    {
+                        avatarUri = await _storageService.UploadFile(driverInputDTO.Code, driverInputDTO.AvatarFile, "avatars");
+                        driver.Avatar = cloudStoragePrefix + avatarUri.AbsolutePath.Substring(avatarUri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
+                    }
+
+                    _context.Drivers.Add(driver);
+                    await _context.SaveChangesAsync();
+
+                    return _mapper.Map<DriverDTO>(driver);
+                }
             }
             return null;
         }
 
-        public async Task<DriverDTO> Update(int id, DriverInputDTO driverInputDTO)
+        public async Task<DriverDTO> Update(int id, DriverInputDTO driverInputDTO, int? createdById)
         {
-            Driver? driver = await _context.Drivers.Include(d => d.Account).FirstOrDefaultAsync(d => d.Id == id);
+            Driver? driver = await _context.Drivers.Include(driver => driver.Account).FirstOrDefaultAsync(driver => driver.Id  == id);
             if (driver != null)
             {
-                driver = _mapper.Map(driverInputDTO, driver);
-                _context.Update(driver);
+                Account account = driver.Account;
+                account.Code = driverInputDTO.Code;
+                account.Email = driverInputDTO.Email;
+                _context.Accounts.Update(account);
                 await _context.SaveChangesAsync();
+
+                driver = _mapper.Map(driverInputDTO, driver);
+
+                if (driverInputDTO.AvatarFile != null)
+                {
+                    if(driver.Avatar != null)
+                    {
+                        string fileName = driver.Avatar.Substring(driver.Avatar.LastIndexOf('/') + 1).Replace("?alt=media", "");
+                        await _storageService.DeleteFile(fileName);
+                    }
+
+                    Uri avatarUri = await _storageService.UploadFile(driverInputDTO.Code, driverInputDTO.AvatarFile, "avatars");
+                    driver.Avatar = cloudStoragePrefix + avatarUri.AbsolutePath.Substring(avatarUri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
+                }
+
+                if (createdById != null)
+                {
+                    driver.CreatedById = (short?)createdById;
+                }
+                _context.Drivers.Update(driver);
+                await _context.SaveChangesAsync();
+
                 return _mapper.Map<DriverDTO>(driver);
             }
             return null;
@@ -128,7 +173,7 @@ namespace FBus_BE.Services.Implements
             return false;
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task<bool> Deactivate(int id)
         {
             Driver? driver = await _context.Drivers.Include(d => d.Account).FirstOrDefaultAsync(d => d.Id == id);
             if (driver != null)

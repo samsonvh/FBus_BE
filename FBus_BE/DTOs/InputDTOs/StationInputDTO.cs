@@ -9,7 +9,7 @@
         public string Ward { get; set; }
         public string District { get; set; }
         public string City { get; set; }
-        public string? Image { get; set; }
+        public IFormFile? ImageFile { get; set; }
         public float Longitude { get; set; }
         public float Latitude { get; set; }
         public string Status { get; set; }

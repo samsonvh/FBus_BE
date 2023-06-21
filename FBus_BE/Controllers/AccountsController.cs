@@ -1,9 +1,7 @@
-﻿using FBus_BE.DTOs;
-using FBus_BE.Models;
+﻿using FBus_BE.DTOs.PageRequests;
 using FBus_BE.Services;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.CodeAnalysis;
 
 namespace FBus_BE.Controllers
 {
@@ -12,25 +10,25 @@ namespace FBus_BE.Controllers
     public class AccountsController : ControllerBase
     {
         private readonly IAccountService _accountService;
+
         public AccountsController(IAccountService accountService)
         {
             _accountService = accountService;
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PageResponse<AccountDTO>))]
+        //[Authorize(Policy = "AdminOnly")]
+        [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetAccountList([FromQuery] PageRequest pageRequest)
+        public async Task<IActionResult> GetAccountList([FromQuery] AccountPageRequest pageRequest)
         {
-            PageResponse<AccountDTO> pageAccount = await _accountService.GetAccountsWithPaging(pageRequest);
-            return Ok(pageAccount);
+            return Ok(await _accountService.GetAccountList(pageRequest));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountDTO))]
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetAccountDetails([FromRoute] int id)
+        public async Task<IActionResult> GetAccountDetail([FromRoute] int id)
         {
-            AccountDTO account = await _accountService.GetAccountDetails(id);
-            return Ok(account);
+            return Ok(await _accountService.GetAccountDetail(id));
         }
     }
 }

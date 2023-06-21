@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using FBus_BE.DTOs;
+using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.PageResponses;
 using FBus_BE.Models;
-using FBus_BE.Services.SortingModel;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System.Linq.Expressions;
 
 namespace FBus_BE.Services.Implements
@@ -18,50 +18,60 @@ namespace FBus_BE.Services.Implements
         {
             _context = context;
             _mapper = mapper;
-            this.orderDict = new Dictionary<string, Expression<Func<Account, object?>>>()
+            orderDict = new Dictionary<string, Expression<Func<Account, object?>>>()
             {
                 {"id", account => account.Id},
                 {"code", account => account.Code}
             };
         }
 
-        public async Task<PageResponse<AccountDTO>> GetAccountsWithPaging(PageRequest pageRequest)
+        public async Task<DefaultPageResponse<AccountDTO>> GetAccountList(AccountPageRequest pageRequest)
         {
-            if (pageRequest != null)
+            DefaultPageResponse<AccountDTO> pageResponse = new DefaultPageResponse<AccountDTO>();
+            if (pageRequest.PageIndex == null)
             {
-                if(pageRequest.OrderBy == null)
-                {
-                    pageRequest.OrderBy = "id";
-                }
-                int skippedCount = (pageRequest.PageNumber - 1) * pageRequest.PageSize;
+                pageRequest.PageIndex = 1;
+            }
+            if (pageRequest.PageSize == null)
+            {
+                pageRequest.PageSize = 10;
+            }
+            if (pageRequest.OrderBy == null)
+            {
+                pageRequest.OrderBy = "id";
+            }
+            int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
+            int totalCount = await _context.Accounts
+                                         .Where(account => pageRequest.Code != null ? account.Code.Contains(pageRequest.Code) : true)
+                                         .Where(account => pageRequest.Email != null ? account.Email.Contains(pageRequest.Email) : true)
+                                         .CountAsync();
+            if (totalCount > 0)
+            {
                 List<AccountDTO> accounts = pageRequest.Direction == "desc"
                     ? await _context.Accounts.Skip(skippedCount)
-                                       .Take(pageRequest.PageSize)
-                                       .OrderByDescending(orderDict[pageRequest.OrderBy])
-                                       .Select(account => _mapper.Map<AccountDTO>(account))
-                                       .ToListAsync()
+                                             .OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
+                                             .Where(account => pageRequest.Code != null ? account.Code.Contains(pageRequest.Code) : true)
+                                             .Where(account => pageRequest.Email != null ? account.Email.Contains(pageRequest.Email) : true)
+                                             .Select(account => _mapper.Map<AccountDTO>(account))
+                                             .ToListAsync()
                     : await _context.Accounts.Skip(skippedCount)
-                                       .Take(pageRequest.PageSize)
-                                       .OrderBy(orderDict[pageRequest.OrderBy])
-                                       .Select(account => _mapper.Map<AccountDTO>(account))
-                                       .ToListAsync();
-                return new PageResponse<AccountDTO>
-                {
-                    Items = accounts,
-                    PageIndex = pageRequest.PageNumber,
-                    PageCount = (_context.Accounts.Count() / pageRequest.PageSize) + 1,
-                    PageSize = pageRequest.PageSize
-                };
+                                             .OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
+                                             .Where(account => pageRequest.Code != null ? account.Code.Contains(pageRequest.Code) : true)
+                                             .Where(account => pageRequest.Email != null ? account.Email.Contains(pageRequest.Email) : true)
+                                             .Select(account => _mapper.Map<AccountDTO>(account))
+                                             .ToListAsync();
+                pageResponse.Data = accounts;
             }
-            return null;
+            pageResponse.PageIndex = (int)pageRequest.PageIndex;
+            pageResponse.PageCount = (int)(totalCount / pageRequest.PageSize) + 1;
+            pageResponse.PageSize = (int)pageRequest.PageSize;
+            return pageResponse;
         }
 
-        public async Task<AccountDTO> GetAccountDetails(int id)
+        public async Task<AccountDTO> GetAccountDetail(int id)
         {
-            Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(account => account.Id == id);
+            Account? account = await _context.Accounts.FirstOrDefaultAsync(account => account.Id == id);
             return _mapper.Map<AccountDTO>(account);
         }
-
     }
 }
