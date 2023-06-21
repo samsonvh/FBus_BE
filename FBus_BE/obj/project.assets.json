@@ -4138,11 +4138,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Samsonmeoww\\source\\repos\\FBus_BE\\FBus_BE\\FBus_BE.csproj",
+      "projectUniqueName": "D:\\Documents\\FU\\SUMMER2023\\SWP391\\FBus_BE\\FBus_BE\\FBus_BE\\FBus_BE.csproj",
       "projectName": "FBus_BE",
-      "projectPath": "C:\\Users\\Samsonmeoww\\source\\repos\\FBus_BE\\FBus_BE\\FBus_BE.csproj",
+      "projectPath": "D:\\Documents\\FU\\SUMMER2023\\SWP391\\FBus_BE\\FBus_BE\\FBus_BE\\FBus_BE.csproj",
       "packagesPath": "C:\\Users\\Samsonmeoww\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Samsonmeoww\\source\\repos\\FBus_BE\\FBus_BE\\obj\\",
+      "outputPath": "D:\\Documents\\FU\\SUMMER2023\\SWP391\\FBus_BE\\FBus_BE\\FBus_BE\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Samsonmeoww\\AppData\\Roaming\\NuGet\\NuGet.Config",
