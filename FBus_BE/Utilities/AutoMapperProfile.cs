@@ -9,7 +9,8 @@ namespace FBus_BE.Utilities
 {
     public class AutoMapperProfile : Profile
     {
-        public AutoMapperProfile() { 
+        public AutoMapperProfile()
+        {
             // Account
             CreateMap<Account, AccountDTO>();
             CreateMap<AccountDTO, Account>();
@@ -39,6 +40,18 @@ namespace FBus_BE.Utilities
 
             // RouteStation
             CreateMap<RouteStation, RouteStationDTO>();
+
+            //Coordination
+            CreateMap<Coordination, CoordinationDTO>();
+            CreateMap<CoordinationInputDTO, Coordination>();
+
+            //Coordinationstatus
+            CreateMap<CoordinationStatus, CoordinationStatusDTO>();
+            CreateMap<CoordinationStatusInputDTO, CoordinationStatus>();
+
+            //BusTrip
+            CreateMap<BusTrip, BusTripDTO>();
+            CreateMap<BusTripInputDTO, BusTrip>();
         }
     }
 }

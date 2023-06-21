@@ -47,7 +47,7 @@ namespace FBus_BE.Controllers
             return Ok(await _stationService.Update(id, stationInputDTO));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(bool))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] string status)
         {
