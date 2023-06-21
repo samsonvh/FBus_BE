@@ -3,7 +3,9 @@ using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.DTOs.ListingDTOs;
 using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.PageResponses;
 using FBus_BE.Models;
+using Google.Apis.Storage.v1;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Route = FBus_BE.Models.Route;
@@ -15,198 +17,192 @@ namespace FBus_BE.Services.Implements
         private readonly Dictionary<string, Expression<Func<Route, object?>>> orderDict;
         private readonly FbusMainContext _context;
         private readonly IMapper _mapper;
+        private readonly IFirebaseStorageService _storageService;
+        private const string cloudStoragePrefix = @"https://firebasestorage.googleapis.com/v0/b/fbus-388009.appspot.com/o/";
 
-        public RouteService(FbusMainContext context, IMapper mapper)
+        public RouteService(FbusMainContext context, IMapper mapper, IFirebaseStorageService storageService)
         {
             _context = context;
             _mapper = mapper;
-            this.orderDict = new Dictionary<string, Expression<Func<Route, object?>>>()
+            orderDict = new Dictionary<string, Expression<Func<Route, object?>>>
             {
-                {"id", route => route.Id}
+                {"id", route => route.Id }
             };
+            _storageService = storageService;
         }
 
-        public async Task<PageResponse<RouteListingDTO>> GetRoutesWithPaging(RoutePageRequest pageRequest)
+        public async Task<DefaultPageResponse<RouteListingDTO>> GetRouteList(RoutePageRequest pageRequest)
         {
-            if (pageRequest != null)
+            DefaultPageResponse<RouteListingDTO> pageResponse = new DefaultPageResponse<RouteListingDTO>();
+            if (pageRequest.PageIndex == null)
             {
-                int skippedCount = (pageRequest.PageNumber - 1) * pageRequest.PageSize;
-                int totalCount = await _context.Routes.CountAsync();
-
-                if (pageRequest.OrderBy == null)
-                {
-                    pageRequest.OrderBy = "id";
-                }
-
+                pageRequest.PageIndex = 1;
+            }
+            if (pageRequest.PageSize == null)
+            {
+                pageRequest.PageSize = 10;
+            }
+            if (pageRequest.OrderBy == null)
+            {
+                pageRequest.OrderBy = "id";
+            }
+            int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
+            int totalCount = await _context.Routes
+                .Where(route => pageRequest.Beginning != null ? route.Beginning.Contains(pageRequest.Beginning) : true)
+                .Where(route => pageRequest.Destination != null ? route.Destination.Contains(pageRequest.Destination) : true)
+                .CountAsync();
+            if (totalCount > 0)
+            {
                 List<RouteListingDTO> routes = pageRequest.Direction == "desc"
-                    ? await _context.Routes.Skip(skippedCount).Take(pageRequest.PageSize)
-                                    .OrderByDescending(orderDict[pageRequest.OrderBy])
-                                    .Select(route => _mapper.Map<RouteListingDTO>(route))
-                                    .ToListAsync()
+                    ? await _context.Routes.Skip(skippedCount)
+                                           .OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
+                                           .Where(route => pageRequest.Beginning != null ? route.Beginning.Contains(pageRequest.Beginning) : true)
+                                           .Where(route => pageRequest.Destination != null ? route.Destination.Contains(pageRequest.Destination) : true)
+                                           .Select(route => _mapper.Map<RouteListingDTO>(route))
+                                           .ToListAsync()
                     : await _context.Routes.Skip(skippedCount)
-                                    .Take(pageRequest.PageSize)
-                                    .OrderBy(orderDict[pageRequest.OrderBy])
-                                    .Select(route => _mapper.Map<RouteListingDTO>(route))
-                                    .ToListAsync();
-                return new PageResponse<RouteListingDTO>
-                {
-                    Items = routes,
-                    PageIndex = pageRequest.PageNumber,
-                    PageCount = (pageRequest.PageSize / totalCount) + 1,
-                    PageSize = pageRequest.PageSize
-                };
+                                           .OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
+                                           .Where(route => pageRequest.Beginning != null ? route.Beginning.Contains(pageRequest.Beginning) : true)
+                                           .Where(route => pageRequest.Destination != null ? route.Destination.Contains(pageRequest.Destination) : true)
+                                           .Select(route => _mapper.Map<RouteListingDTO>(route))
+                                           .ToListAsync();
+                pageResponse.Data = routes;
             }
-            return null;
+            pageResponse.PageIndex = (int)pageRequest.PageIndex;
+            pageResponse.PageCount = (int)(totalCount / pageRequest.PageSize) + 1;
+            pageResponse.PageSize = (int)pageRequest.PageSize;
+            return pageResponse;
         }
 
-        public async Task<RouteDTO> GetRouteDetails(int? routeId)
+        public async Task<RouteDTO> GetRouteDetails(int id)
         {
-            if (routeId != null)
-            {
-                Route? route = await _context.Routes
-                    .Include(r => r.RouteStations)
-                    .FirstOrDefaultAsync(r => r.Id == routeId);
-                return _mapper.Map<RouteDTO>(route);
-            }
-            return null;
+            Route? route = await _context.Routes
+                .Include(route => route.CreatedBy)
+                .Include(route => route.RouteStations).ThenInclude(routeStation => routeStation.Station)
+                .FirstOrDefaultAsync(route => route.Id == id);
+            return _mapper.Map<RouteDTO>(route);
         }
-        
-        public async Task<RouteDTO> Create(RouteInputDTO routeInputDTO)
+
+        public async Task<RouteDTO> Create(int createdById, RouteInputDTO routeInputDTO)
         {
-            if (routeInputDTO != null)
+            Route? route = _mapper.Map<Route>(routeInputDTO);
+            if (route != null)
             {
-                Route route = _mapper.Map<Route>(routeInputDTO);
+                route.CreatedById = (short?)createdById;
                 _context.Routes.Add(route);
                 await _context.SaveChangesAsync();
 
-                foreach (RouteStationInputDTO routeStationInput in routeInputDTO.routeStationInputs)
+                foreach (RouteStationInputDTO routeStationInputDTO in routeInputDTO.RouteStations)
                 {
-                    short? stationId = null;
-                    if (routeStationInput.StationId != null && routeStationInput.StationInputDTO == null)
+                    RouteStation routeStation = new RouteStation();
+                    routeStation.RouteId = route.Id;
+                    routeStation.StationOrder = routeStationInputDTO.StationOrder;
+                    if (routeStationInputDTO.stationInputDTO != null && routeStationInputDTO.StationId == null)
                     {
-                        stationId = routeStationInput.StationId;
-                    }
-                    else if (routeStationInput.StationId == null && routeStationInput.StationInputDTO != null)
-                    {
-                        Station newStation = _mapper.Map<Station>(routeStationInput.StationInputDTO);
-                        _context.Stations.Add(newStation);
-                        await _context.SaveChangesAsync();
-                        stationId = newStation.Id;
-                    }
-
-                    if (stationId != null)
-                    {
-                        RouteStation routeStation = new RouteStation
+                        Station? station = _mapper.Map<Station>(routeStationInputDTO.stationInputDTO);
+                        if(station != null)
                         {
-                            RouteId = route.Id,
-                            StationId = stationId,
-                            StationOrder = routeStationInput.StationOrder
-                        };
-                        _context.RouteStations.Add(routeStation);
+                            if (routeStationInputDTO.stationInputDTO.ImageFile != null)
+                            {
+                                Uri uri = await _storageService.UploadFile(routeStationInputDTO.stationInputDTO.Code, routeStationInputDTO. stationInputDTO.ImageFile, "stations");
+                                station.Image = cloudStoragePrefix + uri.AbsolutePath.Substring(uri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
+                            }
+                            station.CreatedById = (short?)createdById;
+                            _context.Stations.Add(station);
+                            await _context.SaveChangesAsync();
+                            routeStation.StationId = station.Id;
+                        }
                     }
+                    else if (routeStationInputDTO.stationInputDTO == null && routeStationInputDTO.StationId != null)
+                    {
+                        routeStation.StationId = routeStationInputDTO.StationId;
+                    }
+                    _context.RouteStations.Add(routeStation);
+                    await _context.SaveChangesAsync();
                 }
-                await _context.SaveChangesAsync();
 
-                //foreach (RouteStationInputDTO routeStationInputDTO in routeInputDTO.routeStationInputs)
-                //{
-                //    RouteStation routeStation;
-                //    if (routeStationInputDTO.StationId == null && routeStationInputDTO.StationInputDTO != null)
-                //    {
-                //        Station? station = await _context.Stations
-                //            .FirstOrDefaultAsync(station => station.Code == routeStationInputDTO.StationInputDTO.Code);
-                //        if (station == null)
-                //        {
-                //            station = _mapper.Map<Station>(routeStationInputDTO.StationInputDTO);
-                //            _context.Stations.Add(station);
-                //        }
-                //        routeStation = new RouteStation()
-                //        {
-                //            RouteId = route.Id,
-                //            StationId = station.Id,
-                //            StationOrder = routeStationInputDTO.StationOrder
-                //        };
-                //        _context.RouteStations.Add(routeStation);
-                //    }
-                //    else if (routeStationInputDTO.StationId != null && routeStationInputDTO.StationInputDTO == null)
-                //    {
-                //        routeStation = new RouteStation()
-                //        {
-                //            RouteId = route.Id,
-                //            StationId = routeStationInputDTO.StationId,
-                //            StationOrder = routeStationInputDTO.StationOrder
-                //        };
-                //        _context.RouteStations.Add(routeStation);
-                //    }
-                //}
-                //await _context.SaveChangesAsync();
+                short routeId = route.Id;
+                route = await _context.Routes
+                    .Include(route => route.CreatedBy)
+                    .Include(route => route.RouteStations).ThenInclude(routeStation => routeStation.Station)
+                    .FirstOrDefaultAsync(route => route.Id == routeId);
                 return _mapper.Map<RouteDTO>(route);
             }
             return null;
         }
 
-        public async Task<RouteDTO> Update(int id, RouteInputDTO routeInputDTO)
+        public async Task<RouteDTO> Update(int createdById, RouteInputDTO routeInputDTO, int id)
         {
-            if (routeInputDTO != null)
+            Route? route = await _context.Routes.Include(route => route.RouteStations).FirstOrDefaultAsync(route => route.Id == id);
+            if (route != null)
             {
-                Route? route = await _context.Routes.FirstOrDefaultAsync(r => r.Id == id);
-                if (route != null)
+                _context.RouteStations.RemoveRange(route.RouteStations);
+
+                route = _mapper.Map(routeInputDTO, route);
+                route.CreatedById = (short?)createdById;
+                _context.Routes.Update(route);
+                await _context.SaveChangesAsync();
+
+
+                foreach (RouteStationInputDTO routeStationInputDTO in routeInputDTO.RouteStations)
                 {
-                    List<RouteStation> routeStations = await _context.RouteStations.Where(rs => rs.RouteId == route.Id).ToListAsync();
-                    _context.RouteStations.RemoveRange(routeStations);
-
-                    foreach (RouteStationInputDTO routeStationInput in routeInputDTO.routeStationInputs)
+                    RouteStation routeStation = new RouteStation();
+                    routeStation.RouteId = route.Id;
+                    routeStation.StationOrder = routeStationInputDTO.StationOrder;
+                    if (routeStationInputDTO.stationInputDTO != null && routeStationInputDTO.StationId == null)
                     {
-                        short? stationId = null;
-                        if (routeStationInput.StationId != null && routeStationInput.StationInputDTO == null)
+                        Station? station = _mapper.Map<Station>(routeStationInputDTO.stationInputDTO);
+                        if(station != null)
                         {
-                            stationId = routeStationInput.StationId;
-                        }
-                        else if (routeStationInput.StationId == null && routeStationInput.StationInputDTO != null)
-                        {
-                            Station newStation = _mapper.Map<Station>(routeStationInput.StationInputDTO);
-                            _context.Stations.Add(newStation);
-                            await _context.SaveChangesAsync();
-                            stationId = newStation.Id;
-                        }
-
-                        if (stationId != null)
-                        {
-                            RouteStation routeStation = new RouteStation
+                            if (routeStationInputDTO.stationInputDTO.ImageFile != null)
                             {
-                                RouteId = route.Id,
-                                StationId = stationId,
-                                StationOrder = routeStationInput.StationOrder
-                            };
-                            _context.RouteStations.Add(routeStation);
+                                Uri uri = await _storageService.UploadFile(routeStationInputDTO.stationInputDTO.Code, routeStationInputDTO. stationInputDTO.ImageFile, "stations");
+                                station.Image = cloudStoragePrefix + uri.AbsolutePath.Substring(uri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
+                            }
+                            station.CreatedById = (short?)createdById;
+                            _context.Stations.Add(station);
+                            await _context.SaveChangesAsync();
+                            routeStation.StationId = station.Id;
                         }
                     }
-
-                    route = _mapper.Map<Route>(routeInputDTO);
-                    _context.Routes.Update(route);
+                    else if (routeStationInputDTO.stationInputDTO == null && routeStationInputDTO.StationId != null)
+                    {
+                        routeStation.StationId = routeStationInputDTO.StationId;
+                    }
+                    _context.RouteStations.Add(routeStation);
                     await _context.SaveChangesAsync();
                 }
+
+                short routeId = route.Id;
+                route = await _context.Routes
+                    .Include(route => route.CreatedBy)
+                    .Include(route => route.RouteStations).ThenInclude(routeStation => routeStation.Station)
+                    .FirstOrDefaultAsync(route => route.Id == routeId);
+                return _mapper.Map<RouteDTO>(route);
             }
             return null;
         }
 
-        public async Task<bool> ChangeStatus(int routeId, string status)
+        public async Task<bool> ChangeStatus(int id, string status)
         {
-            Route? route = await _context.Routes.FirstOrDefaultAsync(r => r.Id == routeId);
-            if (route != null)
+            Route? route = await _context.Routes.FirstOrDefaultAsync(route => route.Id == id);
+            if(route != null)
             {
                 route.Status = status;
+                _context.Routes.Update(route);
                 await _context.SaveChangesAsync();
                 return true;
             }
             return false;
         }
 
-        public async Task<bool> Deactivate(int routeId)
+        public async Task<bool> Deactivate(int id)
         {
-            Route? route = await _context.Routes.FirstOrDefaultAsync(r => r.Id == routeId);
+            Route? route = await _context.Routes.FirstOrDefaultAsync(route => route.Id == id);
             if(route != null)
             {
-                route.Status = "Inactive";
+                route.Status = "INACTIVE";
+                _context.Routes.Update(route);
                 await _context.SaveChangesAsync();
                 return true;
             }

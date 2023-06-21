@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
 using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
+using FBus_BE.DTOs.ListingDTOs;
+using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.PageResponses;
 using FBus_BE.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace FBus_BE.Services.Implements
 {
@@ -22,50 +20,69 @@ namespace FBus_BE.Services.Implements
         {
             _context = context;
             _mapper = mapper;
+            // <<<<<<< HEAD
             this.orderDict = new Dictionary<string, Expression<Func<Bus, object?>>>()
             {
                 {"id", bus => bus.Id}
             };
         }
 
-        public async Task<bool> Activate(int id)
+        public async Task<DefaultPageResponse<BusListingDTO>> GetBusList(BusPageRequest pageRequest)
         {
-            Bus? bus = await _context.Buses.FirstOrDefaultAsync(d => d.Id == id);
-            if (bus != null)
+            DefaultPageResponse<BusListingDTO> pageResponse = new DefaultPageResponse<BusListingDTO>();
+            if (pageRequest.PageIndex == null)
             {
-                bus.Status = "ACTIVE";
-                await _context.SaveChangesAsync();
-                return true;
+                pageRequest.PageIndex = 1;
             }
-            return false;
+            if (pageRequest.PageSize == null)
+            {
+                pageRequest.PageSize = 10;
+            }
+            if (pageRequest.OrderBy == null)
+            {
+                pageRequest.OrderBy = "id";
+            }
+            int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
+            int totalCount = await _context.Buses
+                .Where(bus => pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
+                .Where(bus => pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                .CountAsync();
+            if (totalCount > 0)
+            {
+                List<BusListingDTO> buses = pageRequest.OrderBy == "desc"
+                    ? await _context.Buses.Skip(skippedCount)
+                                          .OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
+                                          .Where(bus => pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
+                                          .Where(bus => pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                                          .Select(bus => _mapper.Map<BusListingDTO>(bus))
+                                          .ToListAsync()
+                    : await _context.Buses.Skip(skippedCount)
+                                          .OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
+                                          .Where(bus => pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
+                                          .Where(bus => pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                                          .Select(bus => _mapper.Map<BusListingDTO>(bus))
+                                          .ToListAsync();
+                pageResponse.Data = buses;
+            }
+            pageResponse.PageIndex = (int)pageRequest.PageIndex;
+            pageResponse.PageCount = (int)(totalCount / pageRequest.PageSize) + 1;
+            pageResponse.PageSize = (int)pageRequest.PageSize;
+            return pageResponse;
         }
 
-        public async Task<BusDTO> Create(BusInputDTO busInputDTO)
+        public async Task<BusDTO> GetBusDetails(int id)
         {
-            // Bus existingBus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Code == busInputDTO.Code);
+            Bus? bus = await _context.Buses.Include(bus => bus.CreatedBy).FirstOrDefaultAsync(bus => bus.Id == id);
+            return _mapper.Map<BusDTO>(bus);
+        }
 
-            // if (existingBus == null)
-            // {
-            //     var bus = _mapper.Map<Bus>(busInputDTO);
-            //     _context.Buses.Add(bus);
-            //     await _context.SaveChangesAsync();
-
-            //     return _mapper.Map<BusDTO>(bus);
-            // }
-
-            // return null;
-
-            if (busInputDTO.DateOfRegistration < SqlDateTime.MinValue.Value || busInputDTO.DateOfRegistration > SqlDateTime.MaxValue.Value)
+        public async Task<BusDTO> Create(int createdById, BusInputDTO busInputDTO)
+        {
+            Bus? bus = _mapper.Map<Bus>(busInputDTO);
+            if (bus != null)
             {
-                throw new ArgumentOutOfRangeException(nameof(busInputDTO.DateOfRegistration), "DateOfRegistration is outside the valid range.");
-            }
-
-            Bus? existingBus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Code == busInputDTO.Code || bus.LicensePlate == busInputDTO.LicensePlate);
-
-            if (existingBus == null)
-            {
-                var bus = _mapper.Map<Bus>(busInputDTO);
-                bus.CreatedDate = DateTime.Now; // Set the current date and time
+                bus.CreatedById = (short?)createdById;
+                bus.Status = "ACTIVE";
                 _context.Buses.Add(bus);
                 await _context.SaveChangesAsync();
 
@@ -75,19 +92,15 @@ namespace FBus_BE.Services.Implements
             return null;
         }
 
-        public async Task<BusDTO> Update(int id, BusInputDTO busInputDTO)
+        public async Task<BusDTO> Update(int createdById, BusInputDTO busInputDTO, int id)
         {
-            Bus? bus = await _context.Buses.FirstOrDefaultAsync(b => b.Id == id);
+            Bus? bus = await _context.Buses.Include(bus => bus.CreatedBy).FirstOrDefaultAsync(bus => bus.Id == id);
             if (bus != null)
             {
-                bus.Code = busInputDTO.Code;
-                bus.LicensePlate = busInputDTO.LicensePlate;
-                bus.Brand = busInputDTO.Brand;
-                bus.Model = busInputDTO.Model;
-                bus.Color = busInputDTO.Color;
-                bus.Seat = busInputDTO.Seat;
-                bus.Status = busInputDTO.Status;
-                bus.DateOfRegistration = busInputDTO.DateOfRegistration;
+                bus = _mapper.Map(busInputDTO, bus);
+                bus.CreatedById = (short?)createdById;
+
+                _context.Buses.Update(bus);
                 await _context.SaveChangesAsync();
 
                 return _mapper.Map<BusDTO>(bus);

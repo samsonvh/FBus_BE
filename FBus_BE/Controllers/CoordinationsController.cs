@@ -1,19 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.Services;
+using FBus_BE.DTOs.PageRequests;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FBus_BE.DTOs;
 
 namespace FBus_BE.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class CoordinationsController : ControllerBase
     {
         private readonly ICoordinationService _coordinationService;
+
         public CoordinationsController(ICoordinationService coordinationService)
         {
             _coordinationService = coordinationService;
@@ -26,32 +26,29 @@ namespace FBus_BE.Controllers
             return Ok(await _coordinationService.GetCoordinationById(id));
         }
 
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CoordinationDTO))]
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetCoordinationList([FromQuery] CoordinationPageRequest pageRequest)
+        {
+            return Ok(await _coordinationService.GetCoordinationList(pageRequest));
+        }
+
+        [Authorize("AdminOnly")]
         [HttpPost]
-        public async Task<IActionResult> CreateNewCoordination([FromBody] CoordinationInputDTO coordinationInputDTO)
+        public async Task<IActionResult> Create([FromForm] CoordinationInputDTO coordinationInputDTO)
         {
-            return CreatedAtAction(null, await _coordinationService.Create(coordinationInputDTO));
+            string user = User.FindFirst("Id").Value;
+            int userId = Convert.ToInt32(user);
+            return Ok(await _coordinationService.Create(userId, coordinationInputDTO));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-        [HttpPatch("{id:int}")]
-        public async Task<IActionResult> ChangeStatus(int id)
+        [Authorize("AdminOnly")]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromForm] CoordinationInputDTO coordinationInputDTO)
         {
-            return Ok(await _coordinationService.Activate(id));
-        }
-
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            return Ok(await _coordinationService.Deactivate(id));
-        }
-
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CoordinationInputDTO coordinationInputDTO)
-        {
-            return Ok(await _coordinationService.Update(id, coordinationInputDTO));
+            string user = User.FindFirst("Id").Value;
+            int userId = Convert.ToInt32(user);
+            return Ok(await _coordinationService.Update(userId, coordinationInputDTO, id));
         }
     }
 }

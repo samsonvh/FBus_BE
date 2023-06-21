@@ -3,8 +3,8 @@
     public class RouteStationDTO
     {
         public short Id { get; set; }
-        public short RouteId{ get; set; }
-        public short StationId{ get; set; }
-        public byte StationOrder { get; set; }
+        public short RouteId { get; set; }
+        public StationDTO Station { get; set; }
+        public short StationOrder { get; set; }
     }
 }

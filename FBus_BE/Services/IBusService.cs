@@ -1,19 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
-using FBus_BE.Models;
+using FBus_BE.DTOs.ListingDTOs;
+using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.PageResponses;
 
 namespace FBus_BE.Services
 {
     public interface IBusService
     {
-        Task<BusDTO> GetBusById(int? busId);
-        Task<BusDTO> Create(BusInputDTO busInputDTO);
-        Task<BusDTO> Update(int id, BusInputDTO busInputDTO);
-        Task<bool> Deactivate(int id);
-        Task<bool> Activate(int id);
+        Task<DefaultPageResponse<BusListingDTO>> GetBusList(BusPageRequest pageRequest);
+        Task<BusDTO> GetBusDetails(int id);
+        Task<BusDTO> Create(int createById, BusInputDTO busInputDTO);
+        Task<BusDTO> Update(int createById, BusInputDTO busInputDTO, int id);
     }
 }
