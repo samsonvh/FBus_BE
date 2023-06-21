@@ -1,20 +1,20 @@
-﻿using FBus_BE.Models;
-
-namespace FBus_BE.DTOs
+﻿namespace FBus_BE.DTOs
 {
-    public class DriverDTO : DefaultDTO
+    public class DriverDTO
     {
-        public AccountDTO? Account { get; set; }
+        public short Id { get; set; }
 
-        public string FullName { get; set; } = null!;
+        public string Code { get; set; }
 
-        public string Gender { get; set; } = null!;
+        public string FullName { get; set; }
 
-        public string IdCardNumber { get; set; } = null!;
+        public string Gender { get; set; }
 
-        public string Address { get; set; } = null!;
+        public string IdCardNumber { get; set; }
 
-        public string PhoneNumber { get; set; } = null!;
+        public string Address { get; set; }
+
+        public string PhoneNumber { get; set; }
 
         public string? PersonalEmail { get; set; }
 
@@ -24,6 +24,9 @@ namespace FBus_BE.DTOs
 
         public DateTime CreatedDate { get; set; }
 
-        public string Status { get; set; } = null!;
+        public string Status { get; set; }
+
+        public short? CreatedById { get; set; }
+        public string? CreatedByCode { get; set;}
     }
 }

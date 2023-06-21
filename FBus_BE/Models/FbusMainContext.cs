@@ -210,7 +210,7 @@ public partial class FbusMainContext : DbContext
 
             entity.Property(e => e.Address).HasMaxLength(100);
             entity.Property(e => e.Avatar)
-                .HasMaxLength(100)
+                .HasMaxLength(300)
                 .IsUnicode(false);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
@@ -294,7 +294,6 @@ public partial class FbusMainContext : DbContext
             entity.Property(e => e.Code)
                 .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Country).HasMaxLength(50);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

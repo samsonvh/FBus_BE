@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace FBus_BE.DTOs.InputDTOs
 {
@@ -10,22 +9,20 @@ namespace FBus_BE.DTOs.InputDTOs
         [Required]
         public string Code { get; set; }
         [Required]
-        public string FullName { get; set; } = null!;
+        public string FullName { get; set; }
         [Required]
-        public string Gender { get; set; } = null!;
+        public string Gender { get; set; }
         [Required]
-        public string IdCardNumber { get; set; } = null!;
+        public string IdCardNumber { get; set; }
         [Required]
-        public string Address { get; set; } = null!;
+        public string Address { get; set; }
         [Required]
-        public string PhoneNumber { get; set; } = null!;
-        [AllowNull]
+        public string PhoneNumber { get; set; }
+
         public string? PersonalEmail { get; set; }
         [Required]
         public DateTime DateOfBirth { get; set; }
-        [AllowNull]
-        public string? Avatar { get; set; }
-        [Required]
-        public string Status { get; set; } = null!;
+
+        public IFormFile? AvatarFile { get; set; }
     }
 }

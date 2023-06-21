@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\FBus_BE.props" />
-</Project>

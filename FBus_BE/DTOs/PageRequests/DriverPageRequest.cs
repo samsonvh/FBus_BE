@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace FBus_BE.DTOs.PageRequests
+﻿namespace FBus_BE.DTOs.PageRequests
 {
-    public class DriverPageRequest : PageRequest
+    public class DriverPageRequest : DefaultPageRequest
     {
-        public string? Name { get; set; }
-        public string? IdCardNumber { get; set; }
-        public string? Status { get; set; }
+        public string? Code { get; set; }
+        public string? Email { get; set; }
     }
 }
