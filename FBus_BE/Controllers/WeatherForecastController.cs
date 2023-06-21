@@ -31,5 +31,11 @@ namespace FBus_BE.Controllers
             })
             .ToArray();
         }
+
+        [HttpGet(Name = "Status")]
+        public IActionResult Status()
+        {
+            return Ok("Running");
+        }
     }
 }
