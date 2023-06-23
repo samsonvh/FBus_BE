@@ -110,7 +110,7 @@ namespace FBus_BE.Services.Implements
                     station.Image = cloudStoragePrefix + uri.AbsolutePath.Substring(uri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
                 }
                 station.CreatedById = (short?)createdById;
-                _context.Stations.Add(station);
+                _context.Stations.Update(station);
                 await _context.SaveChangesAsync();
                 return _mapper.Map<StationDTO>(station);
             }
