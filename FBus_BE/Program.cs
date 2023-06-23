@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<IConfiguration>(builder.Configuration);
 
@@ -79,6 +81,13 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DriverOnly", policy => policy.RequireClaim("Role", "DRIVER"));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins, builder => { 
+        builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -95,5 +104,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.Run();
