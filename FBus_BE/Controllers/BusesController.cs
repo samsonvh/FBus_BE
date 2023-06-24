@@ -49,18 +49,18 @@ namespace FBus_BE.Controllers
             return Ok(await _busService.Update(userId, busInputDTO, id));
         }
 
-        //[Authorize("AdminOnly")]
-        //[HttpPatch("{id:int}")]
-        //public async Task<IActionResult> ChangeStatus([FromQuery] BusPageRequest pageRequest)
-        //{
-        //    return Ok(await _busService.GetBusList(pageRequest));
-        //}
+        [Authorize("AdminOnly")]
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] string status)
+        {
+            return Ok(await _busService.ChangeStatus(id, status));
+        }
 
-        //[Authorize("AdminOnly")]
-        //[HttpDelete("{id:int}")]
-        //public async Task<IActionResult> Deactivate([FromRoute] int id)
-        //{
-        //    return Ok(await _busService.GetBusDetails(id));
-        //}
+        [Authorize("AdminOnly")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Deactivate([FromRoute] int id)
+        {
+            return Ok(await _busService.Deactivate(id));
+        }
     }
 }

@@ -78,6 +78,18 @@ namespace FBus_BE.Services.Implements
             return pageResponse;
         }
 
+        public async Task<CoordinationDTO> GetCoordinationDetails(int id)
+        {
+            Coordination? coordination = await _context.Coordinations
+                .Include(coordination => coordination.CoordinationStatuses)
+                .Include(coordination => coordination.CreatedBy)
+                .Include(coordination => coordination.Driver)
+                .Include(coordination => coordination.Route)
+                .Include(coordination => coordination.Bus)
+                .FirstOrDefaultAsync(coordination => coordination.Id == id);
+            return _mapper.Map<CoordinationDTO>(coordination);
+        }
+
         public async Task<CoordinationDTO> Create(int createdById, CoordinationInputDTO coordinationInputDTO)
         {
             Coordination? coordination = _mapper.Map<Coordination>(coordinationInputDTO);
@@ -119,22 +131,50 @@ namespace FBus_BE.Services.Implements
                 await _context.SaveChangesAsync();
 
                 CoordinationStatus? latestStatus = await _context.CoordinationStatuses.LastOrDefaultAsync(coordinationStatus => coordinationStatus.CoordinationId == id);
-
-                CoordinationStatus coordinationStatus = new CoordinationStatus
+                if (latestStatus.UpdatedStatus != coordinationInputDTO.Status)
                 {
-                    CoordinationId = coordination.Id,
-                    CreatedById = (short?)createdById,
-                    Note = coordination.Note,
-                    StatusOrder = (byte)(latestStatus.StatusOrder + 1),
-                    OriginalStatus = latestStatus.UpdatedStatus,
-                    UpdatedStatus = coordination.Status
-                };
-                _context.CoordinationStatuses.Add(coordinationStatus);
-                await _context.SaveChangesAsync();
+                    CoordinationStatus coordinationStatus = new CoordinationStatus
+                    {
+                        CoordinationId = coordination.Id,
+                        CreatedById = (short?)createdById,
+                        Note = coordination.Note,
+                        StatusOrder = (byte)(latestStatus.StatusOrder + 1),
+                        OriginalStatus = latestStatus.UpdatedStatus,
+                        UpdatedStatus = coordination.Status
+                    };
+                    _context.CoordinationStatuses.Add(coordinationStatus);
+                    await _context.SaveChangesAsync();
+                }
 
                 return _mapper.Map<CoordinationDTO>(coordination);
             }
             return null;
+        }
+
+        public async Task<bool> ChangeStatus(int id, string status)
+        {
+            Coordination? coordination = await _context.Coordinations.FirstOrDefaultAsync(coordination => coordination.Id == id);
+            if(coordination != null)
+            {
+                coordination.Status = status;
+                _context.Coordinations.Update(coordination);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> Deactivate(int id)
+        {
+            Coordination? coordination = await _context.Coordinations.FirstOrDefaultAsync(coordination => coordination.Id == id);
+            if(coordination != null)
+            {
+                coordination.Status = "INACTIVE";
+                _context.Coordinations.Update(coordination);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
     }
 }
