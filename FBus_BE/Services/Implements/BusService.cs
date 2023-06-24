@@ -107,5 +107,30 @@ namespace FBus_BE.Services.Implements
             return null;
         }
 
+        public async Task<bool> ChangeStatus(int id, string status)
+        {
+            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id ==  id);
+            if (bus != null)
+            {
+                bus.Status = status;
+                _context.Buses.Update(bus);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> Deactivate(int id)
+        {
+            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id == id);
+            if (bus != null)
+            {
+                bus.Status = "INACTIVE";
+                _context.Buses.Update(bus);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
     }
 }

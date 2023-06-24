@@ -19,7 +19,7 @@ namespace FBus_BE.Controllers
 
         [Authorize("AdminOnly")]
         [HttpGet]
-        public async Task<IActionResult> GetRouteList([FromRoute] RoutePageRequest pageRequest)
+        public async Task<IActionResult> GetRouteList([FromQuery] RoutePageRequest pageRequest)
         {
             return Ok(await _routeService.GetRouteList(pageRequest));
         }
