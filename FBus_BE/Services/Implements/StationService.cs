@@ -101,7 +101,7 @@ namespace FBus_BE.Services.Implements
             {
                 if (stationInputDTO.ImageFile != null)
                 {
-                    if(station.Image != null)
+                    if (station.Image != null)
                     {
                         string fileName = station.Image.Substring(station.Image.LastIndexOf('/') + 1).Replace("?alt=media", "");
                         await _storageService.DeleteFile(fileName);
@@ -110,7 +110,7 @@ namespace FBus_BE.Services.Implements
                     station.Image = cloudStoragePrefix + uri.AbsolutePath.Substring(uri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
                 }
                 station.CreatedById = (short?)createdById;
-                _context.Stations.Add(station);
+                _context.Stations.Update(station);
                 await _context.SaveChangesAsync();
                 return _mapper.Map<StationDTO>(station);
             }

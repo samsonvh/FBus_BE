@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using FBus_BE.Dto;
 using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
+using FBus_BE.DTOs.PageRequests;
 using FBus_BE.Models;
 using FBus_BE.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FBus_BE.Controllers
@@ -22,44 +18,36 @@ namespace FBus_BE.Controllers
             _busService = busService;
         }
 
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetBusById(int id)
+        [Authorize("AdminOnly")]
+        [HttpGet]
+        public async Task<IActionResult> GetBusList([FromQuery] BusPageRequest pageRequest)
         {
-            var bus = await _busService.GetBusById(id);
-            if (bus == null)
-            {
-                return NotFound();
-            }
-            return Ok(bus);
+            return Ok(await _busService.GetBusList(pageRequest));
         }
 
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BusDTO))]
+        [Authorize("AdminOnly")]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetBusDetails([FromRoute] int id)
+        {
+            return Ok(await _busService.GetBusDetails(id));
+        }
+
+        [Authorize("AdminOnly")]
         [HttpPost]
-        public async Task<IActionResult> CreateNewBus([FromBody] BusInputDTO busInputDTO)
+        public async Task<IActionResult> Create([FromForm] BusInputDTO busInputDTO)
         {
-            return CreatedAtAction(null, await _busService.Create(busInputDTO));
+            string user = User.FindFirst("Id").Value;
+            int userId = Convert.ToInt32(user);
+            return Ok(await _busService.Create(userId, busInputDTO));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] BusInputDTO busInputDTO)
+        [Authorize("AdminOnly")]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromForm] BusInputDTO busInputDTO)
         {
-            return Ok(await _busService.Update(id, busInputDTO));
-        }
-
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Deactivate(int id)
-        {
-            return Ok(await _busService.Deactivate(id));
-        }
-
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-        [HttpPatch("{id:int}")]
-        public async Task<IActionResult> Activate(int id)
-        {
-            return Ok(await _busService.Activate(id));
+            string user = User.FindFirst("Id").Value;
+            int userId = Convert.ToInt32(user);
+            return Ok(await _busService.Update(userId, busInputDTO, id));
         }
     }
 }
