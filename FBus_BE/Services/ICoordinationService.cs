@@ -8,7 +8,6 @@ namespace FBus_BE.Services
 {
     public interface ICoordinationService
     {
-        Task<CoordinationDTO> GetCoordinationById(int? coordinationId);
         Task<DefaultPageResponse<CoordinationListingDTO>> GetCoordinationList(CoordinationPageRequest pageRequest);
         Task<CoordinationDTO> Create(int createdById, CoordinationInputDTO coordinationInputDTO);
         Task<CoordinationDTO> Update(int createdById, CoordinationInputDTO coordinationInputDTO, int id);

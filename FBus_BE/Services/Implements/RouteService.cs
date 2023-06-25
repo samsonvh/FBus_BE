@@ -100,11 +100,11 @@ namespace FBus_BE.Services.Implements
                     if (routeStationInputDTO.stationInputDTO != null && routeStationInputDTO.StationId == null)
                     {
                         Station? station = _mapper.Map<Station>(routeStationInputDTO.stationInputDTO);
-                        if(station != null)
+                        if (station != null)
                         {
                             if (routeStationInputDTO.stationInputDTO.ImageFile != null)
                             {
-                                Uri uri = await _storageService.UploadFile(routeStationInputDTO.stationInputDTO.Code, routeStationInputDTO. stationInputDTO.ImageFile, "stations");
+                                Uri uri = await _storageService.UploadFile(routeStationInputDTO.stationInputDTO.Code, routeStationInputDTO.stationInputDTO.ImageFile, "stations");
                                 station.Image = cloudStoragePrefix + uri.AbsolutePath.Substring(uri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
                             }
                             station.CreatedById = (short?)createdById;
@@ -152,11 +152,11 @@ namespace FBus_BE.Services.Implements
                     if (routeStationInputDTO.stationInputDTO != null && routeStationInputDTO.StationId == null)
                     {
                         Station? station = _mapper.Map<Station>(routeStationInputDTO.stationInputDTO);
-                        if(station != null)
+                        if (station != null)
                         {
                             if (routeStationInputDTO.stationInputDTO.ImageFile != null)
                             {
-                                Uri uri = await _storageService.UploadFile(routeStationInputDTO.stationInputDTO.Code, routeStationInputDTO. stationInputDTO.ImageFile, "stations");
+                                Uri uri = await _storageService.UploadFile(routeStationInputDTO.stationInputDTO.Code, routeStationInputDTO.stationInputDTO.ImageFile, "stations");
                                 station.Image = cloudStoragePrefix + uri.AbsolutePath.Substring(uri.AbsolutePath.LastIndexOf('/') + 1) + "?alt=media";
                             }
                             station.CreatedById = (short?)createdById;
@@ -186,7 +186,7 @@ namespace FBus_BE.Services.Implements
         public async Task<bool> ChangeStatus(int id, string status)
         {
             Route? route = await _context.Routes.FirstOrDefaultAsync(route => route.Id == id);
-            if(route != null)
+            if (route != null)
             {
                 route.Status = status;
                 _context.Routes.Update(route);
@@ -199,7 +199,7 @@ namespace FBus_BE.Services.Implements
         public async Task<bool> Deactivate(int id)
         {
             Route? route = await _context.Routes.FirstOrDefaultAsync(route => route.Id == id);
-            if(route != null)
+            if (route != null)
             {
                 route.Status = "INACTIVE";
                 _context.Routes.Update(route);

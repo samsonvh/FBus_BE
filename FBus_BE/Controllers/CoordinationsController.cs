@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FBus_BE.DTOs;
 
+
 namespace FBus_BE.Controllers
 {
     [Route("api/[controller]")]
@@ -17,13 +18,6 @@ namespace FBus_BE.Controllers
         public CoordinationsController(ICoordinationService coordinationService)
         {
             _coordinationService = coordinationService;
-        }
-
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CoordinationDTO))]
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetCoordinationsById(int id)
-        {
-            return Ok(await _coordinationService.GetCoordinationById(id));
         }
 
         [Authorize]

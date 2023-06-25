@@ -20,10 +20,10 @@ namespace FBus_BE.Services.Implements
         {
             _context = context;
             _mapper = mapper;
-            // <<<<<<< HEAD
-            this.orderDict = new Dictionary<string, Expression<Func<Bus, object?>>>()
+
+            orderDict = new Dictionary<string, Expression<Func<Bus, object?>>>
             {
-                {"id", bus => bus.Id}
+                {"id", bus => bus.Id }
             };
         }
 
@@ -83,6 +83,8 @@ namespace FBus_BE.Services.Implements
             {
                 bus.CreatedById = (short?)createdById;
                 bus.Status = "ACTIVE";
+                bus.CreatedDate = DateTime.Now;
+
                 _context.Buses.Add(bus);
                 await _context.SaveChangesAsync();
 

@@ -45,6 +45,7 @@ namespace FBus_BE.Controllers
         [Authorize("AdminOnly")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromForm] DriverInputDTO driverInputDTO)
+
         {
             string user = User.FindFirst("Id").Value;
             int userId = Convert.ToInt32(user);

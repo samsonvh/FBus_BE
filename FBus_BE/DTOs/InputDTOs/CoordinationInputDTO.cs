@@ -1,4 +1,5 @@
 namespace FBus_BE.DTOs.InputDTOs
+
 {
     public class CoordinationInputDTO
     {
