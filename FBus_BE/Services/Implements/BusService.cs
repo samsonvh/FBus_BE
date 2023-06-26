@@ -83,6 +83,7 @@ namespace FBus_BE.Services.Implements
             {
                 bus.CreatedById = (short?)createdById;
                 bus.Status = "ACTIVE";
+                bus.CreatedDate = DateTime.Now;
                 _context.Buses.Add(bus);
                 await _context.SaveChangesAsync();
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+
 namespace FBus_BE.Models;
 
 public partial class Account
@@ -19,15 +19,14 @@ public partial class Account
 
     public virtual ICollection<Bus> Buses { get; set; } = new List<Bus>();
 
-    public virtual ICollection<Coordination> Coordinations { get; set; } = new List<Coordination>();
-
-    public virtual ICollection<Driver> Drivers { get; set; } = new List<Driver>();
     public virtual ICollection<CoordinationStatus> CoordinationStatuses { get; set; } = new List<CoordinationStatus>();
 
+    public virtual ICollection<Coordination> Coordinations { get; set; } = new List<Coordination>();
 
     public virtual ICollection<Driver> DriverAccounts { get; set; } = new List<Driver>();
 
     public virtual ICollection<Driver> DriverCreatedBies { get; set; } = new List<Driver>();
+
     public virtual ICollection<Route> Routes { get; set; } = new List<Route>();
 
     public virtual ICollection<Station> Stations { get; set; } = new List<Station>();

@@ -15,43 +15,60 @@ namespace FBus_BE.Utilities
             CreateMap<Account, AccountDTO>();
             CreateMap<AccountDTO, Account>();
 
-            // Driver
-            CreateMap<Driver, DriverDTO>();
-            CreateMap<Driver, DriverListingDTO>();
+            CreateMap<Driver, DriverListingDTO>()
+                .ForMember(driver => driver.Code, option => option.MapFrom(driver => driver.Account.Code));
+            CreateMap<Driver, DriverDTO>()
+                .ForMember(driver => driver.Code, option => option.MapFrom(driver => driver.Account.Code))
+                .ForMember(driver => driver.CreatedByCode, option => option.MapFrom(driver => driver.CreatedBy.Code));
             CreateMap<DriverInputDTO, Driver>()
-                .ForMember(dest => dest.Id, option => option.Ignore())
-                .ForMember(dest => dest.AccountId, option => option.Ignore())
-                .ForMember(dest => dest.Account, option => option.Ignore())
-                .ForMember(dest => dest.CreatedDate, option => option.Ignore());
+                .ForMember(driver => driver.Id, option => option.Ignore())
+                .ForMember(driver => driver.AccountId, option => option.Ignore())
+                .ForMember(driver => driver.CreatedById, option => option.Ignore())
+                .ForMember(driver => driver.CreatedDate, option => option.Ignore())
+                .ForMember(driver => driver.Status, option => option.Ignore());
+
+            // Bus
+            CreateMap<Bus, BusListingDTO>();
+            CreateMap<Bus, BusDTO>()
+                .ForMember(bus => bus.CreatedByCode, option => option.MapFrom(bus => bus.CreatedBy.Code));
+            CreateMap<BusInputDTO, Bus>();
 
             // Station
             CreateMap<Station, StationListingDTO>();
-            CreateMap<Station, StationDTO>();
-            CreateMap<StationInputDTO, Station>()
-                .ForMember(dest => dest.Id, option => option.Ignore())
-                .ForMember(dest => dest.CreatedById, option => option.Ignore())
-                .ForMember(dest => dest.CreatedBy, option => option.Ignore())
-                .ForMember(dest => dest.CreatedDate, option => option.Ignore());
+            CreateMap<Station, StationDTO>()
+                .ForMember(station => station.CreatedByCode, option => option.MapFrom(station => station.CreatedBy.Code));
+            CreateMap<StationInputDTO, Station>();
 
             // Route
             CreateMap<Route, RouteListingDTO>();
-            CreateMap<Route, RouteDTO>();
-            CreateMap<RouteInputDTO, Route>();
+            CreateMap<RouteInputDTO, Route>()
+                .ForMember(route => route.RouteStations, option => option.Ignore());
+            CreateMap<Route, RouteDTO>()
+                .ForMember(route => route.CreatedByCode, option => option.MapFrom(route => route.CreatedBy.Code));
 
             // RouteStation
-            CreateMap<RouteStation, RouteStationDTO>();
+            CreateMap<RouteStation, RouteStationDTO>()
+                .ForMember(routeStation => routeStation.Station, option => option.MapFrom(routeStation => routeStation.Station));
 
-            //Coordination
+            // Coordination
             CreateMap<Coordination, CoordinationDTO>();
-            CreateMap<CoordinationInputDTO, Coordination>();
-
-            //Coordinationstatus
-            CreateMap<CoordinationStatus, CoordinationStatusDTO>();
-            CreateMap<CoordinationStatusInputDTO, CoordinationStatus>();
+            CreateMap<Coordination, CoordinationListingDTO>()
+                .ForMember(coordination => coordination.BusCode, option => option.MapFrom(coordination => coordination.Bus.Code))
+                .ForMember(coordination => coordination.Beginning, option => option.MapFrom(coordination => coordination.Route.Beginning))
+                .ForMember(coordination => coordination.Destination, option => option.MapFrom(coordination => coordination.Route.Destination))
+                .ForMember(coordination => coordination.DriverCode, option => option.MapFrom(coordination => coordination.Driver.Account.Code))
+                .ForMember(coordination => coordination.CreatedByCode, option => option.MapFrom(coordination => coordination.CreatedBy.Code));
 
             //BusTrip
-            CreateMap<BusTrip, BusTripDTO>();
+
+            CreateMap<BusTrip, BusTripListingDTO>();
+            CreateMap<BusTrip, BusTripDTO>()
+                .ForMember(busTrip => busTrip.Coordination, option => option.MapFrom(busTrip => busTrip.Coordination))
+                .ForPath(busTrip => busTrip.Coordination.Driver.Code, option => option.MapFrom(busTrip => busTrip.Coordination.Driver.CreatedBy.Code));
+
             CreateMap<BusTripInputDTO, BusTrip>();
+
+
         }
     }
 }

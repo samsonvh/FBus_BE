@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 namespace FBus_BE.Models;
 
 public partial class Station
@@ -21,6 +22,7 @@ public partial class Station
     public string District { get; set; } = null!;
 
     public string City { get; set; } = null!;
+
     public string? Image { get; set; }
 
     public float Longitude { get; set; }

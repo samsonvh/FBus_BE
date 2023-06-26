@@ -99,6 +99,7 @@ namespace FBus_BE.Services.Implements
             Station? station = await _context.Stations.FirstOrDefaultAsync(station => station.Id == id);
             if (station != null)
             {
+                station = _mapper.Map(stationInputDTO, station);
                 if (stationInputDTO.ImageFile != null)
                 {
                     if (station.Image != null)

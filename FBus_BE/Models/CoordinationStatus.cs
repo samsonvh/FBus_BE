@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FBus_BE.Models;
 
@@ -11,9 +9,10 @@ public partial class CoordinationStatus
 
     public short? CoordinationId { get; set; }
 
-    public short? DriverId { get; set; }
     public short? CreatedById { get; set; }
+
     public string OriginalStatus { get; set; } = null!;
+
     public string UpdatedStatus { get; set; } = null!;
 
     public byte StatusOrder { get; set; }
@@ -24,6 +23,5 @@ public partial class CoordinationStatus
 
     public virtual Coordination? Coordination { get; set; }
 
-    public virtual Driver? Driver { get; set; }
     public virtual Account? CreatedBy { get; set; }
 }

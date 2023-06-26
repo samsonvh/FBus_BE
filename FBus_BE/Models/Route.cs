@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 namespace FBus_BE.Models;
 
 public partial class Route

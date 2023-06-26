@@ -27,66 +27,77 @@ namespace FBus_BE.Services.Implements
             };
         }
 
-        public Task<bool> Activate(int id)
+        public async Task<bool> ChangeStatus(int id, string status)
         {
-            throw new NotImplementedException();
+            BusTrip? busTrip = await _context.BusTrips.Include(b => b.Coordination).FirstOrDefaultAsync(b => b.Id == id);
+            if (busTrip != null)
+            {
+                busTrip.Status = status;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
 
         public async Task<BusTripDTO> Create(BusTripInputDTO busTripInputDTO)
         {
-            BusTrip? busTrip = await _context.BusTrips.FirstOrDefaultAsync(busTrip => busTrip.CoordinationId == busTripInputDTO.CoordinationId);
-            if (busTrip == null)
+            BusTrip? busTrip = _mapper.Map<BusTrip>(busTripInputDTO);
+            if (busTrip != null)
             {
-                busTrip = _mapper.Map<BusTrip>(busTripInputDTO);
+                busTrip.CoordinationId = busTripInputDTO.CoordinationId;
+                busTrip.CreatedDate = DateTime.Now;
+
                 _context.BusTrips.Add(busTrip);
                 await _context.SaveChangesAsync();
-
                 return _mapper.Map<BusTripDTO>(busTrip);
             }
             return null;
         }
 
-        public Task<bool> Deactivate(int id)
+        public async Task<bool> Deactivate(int id)
         {
-            return null;
+            BusTrip? busTrip = await _context.BusTrips.Include(b => b.Coordination).FirstOrDefaultAsync(b => b.Id == id);
+            if (busTrip != null)
+            {
+                busTrip.Status = "INACTIVE";
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
 
-        public async Task<BusTripDTO> GetBusById(int? busTripId)
+        public async Task<BusTripDTO> GetBusTripDetails(int? busTripId)
         {
-            if (busTripId != null)
-            {
-                BusTrip? busTrip = await _context.BusTrips.FirstOrDefaultAsync(b => b.Id == busTripId);
-                return _mapper.Map<BusTripDTO>(busTrip);
-            }
-            return null;
-        }
-
-        public async Task<List<BusTripDTO>> GetBusByCoordinationId(int? coordinationId)
-        {
-            if (coordinationId != null)
-            {
-                List<BusTrip> busTrips = await _context.BusTrips
-                            .Where(bt => bt.CoordinationId == coordinationId)
-                            .ToListAsync();
-                return _mapper.Map<List<BusTripDTO>>(busTrips);
-            }
-
-            return null;
+            BusTrip? busTrip = await _context.BusTrips
+            .Include(busTrip => busTrip.Coordination)
+            .Include(busTrip => busTrip.Coordination.Bus)
+            .Include(busTrip => busTrip.Coordination.Driver.CreatedBy)
+            .Include(busTrip => busTrip.Coordination.Route)
+            .Include(busTrip => busTrip.Coordination.CreatedBy)
+            .FirstOrDefaultAsync();
+            return _mapper.Map<BusTripDTO>(busTrip);
         }
 
         public async Task<BusTripDTO> Update(int id, BusTripInputDTO busTripInputDTO)
         {
-            BusTrip? busTrip = await _context.BusTrips.FirstOrDefaultAsync(b => b.Id == id);
+            BusTrip? busTrip = await _context.BusTrips
+            .Include(busTrip => busTrip.Coordination)
+            .Include(busTrip => busTrip.Coordination.Bus)
+            .Include(busTrip => busTrip.Coordination.Driver.CreatedBy)
+            .Include(busTrip => busTrip.Coordination.Route)
+            .Include(busTrip => busTrip.Coordination.CreatedBy)
+            .FirstOrDefaultAsync(busTrip => busTrip.Id == id);
             if (busTrip != null)
             {
-                busTrip.CoordinationId = busTripInputDTO.CoordinationId;
-                busTrip.StartingDate = busTripInputDTO.StartingDate;
-                busTrip.EndingDate = busTripInputDTO.EndingDate;
-                busTrip.Status = busTripInputDTO.Status;
+                busTrip = _mapper.Map(busTripInputDTO, busTrip);
+                _context.Update(busTrip);
                 await _context.SaveChangesAsync();
+
                 return _mapper.Map<BusTripDTO>(busTrip);
+
             }
             return null;
+
         }
     }
 }
