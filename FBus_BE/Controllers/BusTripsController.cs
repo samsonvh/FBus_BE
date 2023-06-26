@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FBus_BE.Controllers
@@ -19,41 +20,39 @@ namespace FBus_BE.Controllers
             _busTripService = busTripService;
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BusTripDTO))]
+        [Authorize("AdminOnly")]
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetBusTripDetails(int id)
+        public async Task<IActionResult> GetBusTripDetails([FromRoute] int id)
         {
-            return Ok(await _busTripService.GetBusById(id));
+            return Ok(await _busTripService.GetBusTripDetails(id));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<BusTripDTO>))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpGet("coordination/{coordinationId:int}")]
-        public async Task<IActionResult> GetBusTripsByCoordinationId(int coordinationId)
-        {
-            var busTrips = await _busTripService.GetBusByCoordinationId(coordinationId);
-
-            if (busTrips != null && busTrips.Count > 0)
-            {
-                return Ok(busTrips);
-            }
-
-            return NotFound();
-        }
-
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BusTripDTO))]
+        [Authorize("AdminOnly")]
         [HttpPost]
-        public async Task<IActionResult> CreateNewBus([FromBody] BusTripInputDTO busTripInputDTO)
+        public async Task<IActionResult> Create([FromForm] BusTripInputDTO busTripInputDTO)
         {
-            return CreatedAtAction(null, await _busTripService.Create(busTripInputDTO));
+            return Ok(await _busTripService.Create(busTripInputDTO));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BusTripDTO))]
+        [Authorize("AdminOnly")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] BusTripInputDTO busTripInputDTO)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromForm] BusTripInputDTO busTripInputDTO)
         {
             return Ok(await _busTripService.Update(id, busTripInputDTO));
         }
 
+        [Authorize("AdminOnly")]
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] string status)
+        {
+            return Ok(await _busTripService.ChangeStatus(id, status));
+        }
+
+        [Authorize("AdminOnly")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Deactive([FromRoute] int id)
+        {
+            return Ok(await _busTripService.Deactivate(id));
+        }
     }
 }

@@ -1,11 +1,9 @@
 using FBus_BE.DTOs.InputDTOs;
-using FBus_BE.Services;
 using FBus_BE.DTOs.PageRequests;
+using FBus_BE.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using FBus_BE.DTOs;
-
 
 namespace FBus_BE.Controllers
 {
@@ -27,6 +25,13 @@ namespace FBus_BE.Controllers
             return Ok(await _coordinationService.GetCoordinationList(pageRequest));
         }
 
+        [Authorize]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetCoordinationDetails([FromRoute] int id)
+        {
+            return Ok(await _coordinationService.GetCoordinationDetails(id));
+        }
+
         [Authorize("AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CoordinationInputDTO coordinationInputDTO)
@@ -43,6 +48,20 @@ namespace FBus_BE.Controllers
             string user = User.FindFirst("Id").Value;
             int userId = Convert.ToInt32(user);
             return Ok(await _coordinationService.Update(userId, coordinationInputDTO, id));
+        }
+
+        [Authorize("AdminOnly")]
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] string status)
+        {
+            return Ok(await _coordinationService.ChangeStatus(id, status));
+        }
+
+        [Authorize("AdminOnly")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Deactivate([FromRoute] int id)
+        {
+            return Ok(await _coordinationService.Deactivate(id));
         }
     }
 }

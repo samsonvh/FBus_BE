@@ -9,7 +9,8 @@ namespace FBus_BE
 {
     public class AutoMapperProfile : Profile
     {
-        public AutoMapperProfile() {
+        public AutoMapperProfile()
+        {
             // Account
             CreateMap<Account, AccountDTO>();
 
@@ -57,6 +58,15 @@ namespace FBus_BE
                 .ForMember(coordination => coordination.Destination, option => option.MapFrom(coordination => coordination.Route.Destination))
                 .ForMember(coordination => coordination.DriverCode, option => option.MapFrom(coordination => coordination.Driver.Account.Code))
                 .ForMember(coordination => coordination.CreatedByCode, option => option.MapFrom(coordination => coordination.CreatedBy.Code));
+            CreateMap<CoordinationInputDTO, Coordination>();
+            //BusTrip
+
+            CreateMap<BusTrip, BusTripListingDTO>();
+            CreateMap<BusTrip, BusTripDTO>()
+                .ForMember(busTrip => busTrip.Coordination, option => option.MapFrom(busTrip => busTrip.Coordination))
+                .ForPath(busTrip => busTrip.Coordination.Driver.Code, option => option.MapFrom(busTrip => busTrip.Coordination.Driver.CreatedBy.Code));
+
+            CreateMap<BusTripInputDTO, BusTrip>();
         }
     }
 }
