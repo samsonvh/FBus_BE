@@ -12,5 +12,7 @@ namespace FBus_BE.Services
         Task<BusDTO> GetBusDetails(int id);
         Task<BusDTO> Create(int createById, BusInputDTO busInputDTO);
         Task<BusDTO> Update(int createById, BusInputDTO busInputDTO, int id);
+        Task<bool> ChangeStatus(int id, string status);
+        Task<bool> Deactivate(int id);
     }
 }

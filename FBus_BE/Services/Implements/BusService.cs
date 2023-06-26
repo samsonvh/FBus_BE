@@ -20,7 +20,6 @@ namespace FBus_BE.Services.Implements
         {
             _context = context;
             _mapper = mapper;
-
             orderDict = new Dictionary<string, Expression<Func<Bus, object?>>>
             {
                 {"id", bus => bus.Id }
@@ -83,13 +82,12 @@ namespace FBus_BE.Services.Implements
             {
                 bus.CreatedById = (short?)createdById;
                 bus.Status = "ACTIVE";
-                bus.CreatedDate = DateTime.Now;
+
                 _context.Buses.Add(bus);
                 await _context.SaveChangesAsync();
 
                 return _mapper.Map<BusDTO>(bus);
             }
-
             return null;
         }
 
@@ -106,31 +104,33 @@ namespace FBus_BE.Services.Implements
 
                 return _mapper.Map<BusDTO>(bus);
             }
-
             return null;
         }
 
-        public async Task<bool> Deactivate(int id)
+        public async Task<bool> ChangeStatus(int id, string status)
         {
-            Bus? bus = await _context.Buses.Include(d => d.CreatedBy).FirstOrDefaultAsync(d => d.Id == id);
+            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id == id);
             if (bus != null)
             {
-                bus.Status = "INACTIVE";
+                bus.Status = status;
+                _context.Buses.Update(bus);
                 await _context.SaveChangesAsync();
                 return true;
             }
             return false;
         }
 
-        public async Task<BusDTO> GetBusById(int? busId)
+        public async Task<bool> Deactivate(int id)
         {
-            if (busId != null)
+            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id == id);
+            if (bus != null)
             {
-                Bus? bus = await _context.Buses.FirstOrDefaultAsync(b => b.Id == busId);
-                return _mapper.Map<BusDTO>(bus);
+                bus.Status = "INACTIVE";
+                _context.Buses.Update(bus);
+                await _context.SaveChangesAsync();
+                return true;
             }
-            return null;
+            return false;
         }
-
     }
 }
