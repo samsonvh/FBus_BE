@@ -3,7 +3,8 @@
     public class DriverDTO
     {
         public short Id { get; set; }
-
+        public string Email { get; set; }
+        public string Name { get; set; }
         public string Code { get; set; }
 
         public string FullName { get; set; }

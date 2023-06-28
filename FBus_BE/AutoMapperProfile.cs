@@ -15,9 +15,11 @@ namespace FBus_BE
 
             // Driver
             CreateMap<Driver, DriverListingDTO>()
-                .ForMember(driver => driver.Code, option => option.MapFrom(driver => driver.Account.Code));
+                .ForMember(driver => driver.Code, option => option.MapFrom(driver => driver.Account.Code))
+                .ForMember(driver => driver.Email, option => option.MapFrom(driver => driver.Account.Email));
             CreateMap<Driver, DriverDTO>()
                 .ForMember(driver => driver.Code, option => option.MapFrom(driver => driver.Account.Code))
+                .ForMember(driver => driver.Email, option => option.MapFrom(driver => driver.Account.Email))
                 .ForMember(driver => driver.CreatedByCode, option => option.MapFrom(driver => driver.CreatedBy.Code));
             CreateMap<DriverInputDTO, Driver>()
                 .ForMember(driver => driver.Id, option => option.Ignore())
