@@ -1,4 +1,4 @@
-﻿namespace FBus_BE.DTOs
+namespace FBus_BE.DTOs
 {
     public class CoordinationDTO
     {
@@ -10,6 +10,6 @@
         public RouteDTO Route { get; set; }
         public DateTime DateLine { get; set; }
         public DateTime DueDate { get; set; }
-        public string Status { get; set; }  
+        public string Status { get; set; }
     }
 }

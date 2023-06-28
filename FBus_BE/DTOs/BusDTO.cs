@@ -1,4 +1,4 @@
-﻿namespace FBus_BE.DTOs
+namespace FBus_BE.DTOs
 {
     public class BusDTO
     {

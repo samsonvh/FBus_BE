@@ -102,7 +102,7 @@ namespace FBus_BE.Services.Implements
                 station = _mapper.Map(stationInputDTO, station);
                 if (stationInputDTO.ImageFile != null)
                 {
-                    if(station.Image != null)
+                    if (station.Image != null)
                     {
                         string fileName = station.Image.Substring(station.Image.LastIndexOf('/') + 1).Replace("?alt=media", "");
                         await _storageService.DeleteFile(fileName);

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.DTOs.ListingDTOs;
@@ -154,7 +154,7 @@ namespace FBus_BE.Services.Implements
         public async Task<bool> ChangeStatus(int id, string status)
         {
             Coordination? coordination = await _context.Coordinations.FirstOrDefaultAsync(coordination => coordination.Id == id);
-            if(coordination != null)
+            if (coordination != null)
             {
                 coordination.Status = status;
                 _context.Coordinations.Update(coordination);
@@ -167,7 +167,7 @@ namespace FBus_BE.Services.Implements
         public async Task<bool> Deactivate(int id)
         {
             Coordination? coordination = await _context.Coordinations.FirstOrDefaultAsync(coordination => coordination.Id == id);
-            if(coordination != null)
+            if (coordination != null)
             {
                 coordination.Status = "INACTIVE";
                 _context.Coordinations.Update(coordination);

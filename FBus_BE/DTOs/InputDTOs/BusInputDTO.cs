@@ -1,4 +1,4 @@
-﻿namespace FBus_BE.DTOs.InputDTOs
+namespace FBus_BE.DTOs.InputDTOs
 {
     public class BusInputDTO
     {

@@ -1,4 +1,5 @@
-﻿using FBus_BE.DTOs.InputDTOs;
+using FBus_BE.DTOs;
+using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.DTOs.PageRequests;
 using FBus_BE.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -43,7 +44,8 @@ namespace FBus_BE.Controllers
 
         [Authorize("AdminOnly")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update([FromRoute] int id,[FromForm] DriverInputDTO driverInputDTO)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromForm] DriverInputDTO driverInputDTO)
+
         {
             string user = User.FindFirst("Id").Value;
             int userId = Convert.ToInt32(user);

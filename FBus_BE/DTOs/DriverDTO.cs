@@ -28,6 +28,6 @@
         public string Status { get; set; }
 
         public short? CreatedById { get; set; }
-        public string? CreatedByCode { get; set;}
+        public string? CreatedByCode { get; set; }
     }
 }

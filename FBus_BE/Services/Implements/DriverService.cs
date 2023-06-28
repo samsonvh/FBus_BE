@@ -122,7 +122,7 @@ namespace FBus_BE.Services.Implements
 
         public async Task<DriverDTO> Update(int id, DriverInputDTO driverInputDTO, int? createdById)
         {
-            Driver? driver = await _context.Drivers.Include(driver => driver.Account).FirstOrDefaultAsync(driver => driver.Id  == id);
+            Driver? driver = await _context.Drivers.Include(driver => driver.Account).FirstOrDefaultAsync(driver => driver.Id == id);
             if (driver != null)
             {
                 Account account = driver.Account;
@@ -135,7 +135,7 @@ namespace FBus_BE.Services.Implements
 
                 if (driverInputDTO.AvatarFile != null)
                 {
-                    if(driver.Avatar != null)
+                    if (driver.Avatar != null)
                     {
                         string fileName = driver.Avatar.Substring(driver.Avatar.LastIndexOf('/') + 1).Replace("?alt=media", "");
                         await _storageService.DeleteFile(fileName);

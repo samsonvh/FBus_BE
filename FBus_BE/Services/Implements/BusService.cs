@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
 using FBus_BE.DTOs.ListingDTOs;
@@ -93,7 +93,7 @@ namespace FBus_BE.Services.Implements
 
         public async Task<BusDTO> Update(int createdById, BusInputDTO busInputDTO, int id)
         {
-            Bus? bus = await _context.Buses.Include(bus => bus.CreatedBy).FirstOrDefaultAsync(bus => bus.Id ==id);
+            Bus? bus = await _context.Buses.Include(bus => bus.CreatedBy).FirstOrDefaultAsync(bus => bus.Id == id);
             if (bus != null)
             {
                 bus = _mapper.Map(busInputDTO, bus);
@@ -109,7 +109,7 @@ namespace FBus_BE.Services.Implements
 
         public async Task<bool> ChangeStatus(int id, string status)
         {
-            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id ==  id);
+            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id == id);
             if (bus != null)
             {
                 bus.Status = status;
