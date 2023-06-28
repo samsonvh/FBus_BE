@@ -7,7 +7,6 @@ namespace FBus_BE.DTOs.PageRequests
 {
     public class BusTripPageRequest : DefaultPageRequest
     {
-        public string? CoordinationId { get; set; }
-
+        public short? CoordinationId { get; set; }
     }
 }

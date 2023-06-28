@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FBus_BE.DTOs;
 using FBus_BE.DTOs.InputDTOs;
+using FBus_BE.DTOs.ListingDTOs;
+using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.PageResponses;
 using FBus_BE.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,43 +30,50 @@ namespace FBus_BE.Services.Implements
             };
         }
 
-        public async Task<bool> ChangeStatus(int id, string status)
+        public async Task<DefaultPageResponse<BusTripListingDTO>> GetBusTripList(BusTripPageRequest pageRequest)
         {
-            BusTrip? busTrip = await _context.BusTrips.Include(b => b.Coordination).FirstOrDefaultAsync(b => b.Id == id);
-            if (busTrip != null)
+            DefaultPageResponse<BusTripListingDTO> pageResponse = new DefaultPageResponse<BusTripListingDTO>();
+            if (pageRequest.PageIndex == null)
             {
-                busTrip.Status = status;
-                await _context.SaveChangesAsync();
-                return true;
+                pageRequest.PageIndex = 1;
             }
-            return false;
-        }
-
-        public async Task<BusTripDTO> Create(BusTripInputDTO busTripInputDTO)
-        {
-            BusTrip? busTrip = _mapper.Map<BusTrip>(busTripInputDTO);
-            if (busTrip != null)
+            if (pageRequest.PageSize == null)
             {
-                busTrip.CoordinationId = busTripInputDTO.CoordinationId;
-                busTrip.CreatedDate = DateTime.Now;
-
-                _context.BusTrips.Add(busTrip);
-                await _context.SaveChangesAsync();
-                return _mapper.Map<BusTripDTO>(busTrip);
+                pageRequest.PageSize = 10;
             }
-            return null;
-        }
-
-        public async Task<bool> Deactivate(int id)
-        {
-            BusTrip? busTrip = await _context.BusTrips.Include(b => b.Coordination).FirstOrDefaultAsync(b => b.Id == id);
-            if (busTrip != null)
+            if (pageRequest.OrderBy == null)
             {
-                busTrip.Status = "INACTIVE";
-                await _context.SaveChangesAsync();
-                return true;
+                pageRequest.OrderBy = "id";
             }
-            return false;
+            int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
+            int totalCount = await _context.BusTrips
+                .Where(busTrip => pageRequest.CoordinationId != null ? busTrip.CoordinationId == pageRequest.CoordinationId : true)
+                .CountAsync();
+            if (totalCount > 0)
+            {
+                List<BusTripListingDTO> busTrips = pageRequest.OrderBy == "desc"
+                    ? await _context.BusTrips.Skip(skippedCount)
+                                        .OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
+                                        .Where(busTrip => pageRequest.CoordinationId != null ? busTrip.CoordinationId == pageRequest.CoordinationId : true)
+                                        .Include(busTrips => busTrips.Coordination.Bus)
+                                        .Include(busTrips => busTrips.Coordination.Driver)
+                                        .Include(busTrips => busTrips.Coordination.Route)
+                                        .Select(busTrips => _mapper.Map<BusTripListingDTO>(busTrips))
+                                        .ToListAsync()
+                    : await _context.BusTrips.Skip(skippedCount)
+                                        .OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
+                                        .Where(busTrips => pageRequest.CoordinationId != null ? busTrips.CoordinationId == pageRequest.CoordinationId : true)
+                                        .Include(busTrips => busTrips.Coordination.Bus)
+                                        .Include(busTrips => busTrips.Coordination.Driver)
+                                        .Include(busTrips => busTrips.Coordination.Route)
+                                        .Select(busTrips => _mapper.Map<BusTripListingDTO>(busTrips))
+                                        .ToListAsync();
+                pageResponse.Data = busTrips;
+            }
+            pageResponse.PageIndex = (int)pageRequest.PageIndex;
+            pageResponse.PageCount = (int)(totalCount / pageRequest.PageSize) + 1;
+            pageResponse.PageSize = (int)pageRequest.PageSize;
+            return pageResponse;
         }
 
         public async Task<BusTripDTO> GetBusTripDetails(int? busTripId)
@@ -78,6 +88,28 @@ namespace FBus_BE.Services.Implements
             return _mapper.Map<BusTripDTO>(busTrip);
         }
 
+        public async Task<BusTripDTO> Create(BusTripInputDTO busTripInputDTO)
+        {
+            Coordination? coordination = await _context.Coordinations
+            .Include(c => c.CreatedBy)
+            .Include(c => c.Driver.CreatedBy)
+            .Include(c => c.Bus.CreatedBy)
+            .Include(c => c.Route)
+            .FirstOrDefaultAsync(c => c.Id == busTripInputDTO.CoordinationId);
+            BusTrip? busTrip = _mapper.Map<BusTrip>(busTripInputDTO);
+
+            if (busTrip != null)
+            {
+                busTrip.CoordinationId = busTripInputDTO.CoordinationId;
+                busTrip.Status = "ACTIVE";
+                _context.BusTrips.Add(busTrip);
+                await _context.SaveChangesAsync();
+
+                return _mapper.Map<BusTripDTO>(busTrip);
+            }
+            return null;
+        }
+
         public async Task<BusTripDTO> Update(int id, BusTripInputDTO busTripInputDTO)
         {
             BusTrip? busTrip = await _context.BusTrips
@@ -89,15 +121,40 @@ namespace FBus_BE.Services.Implements
             .FirstOrDefaultAsync(busTrip => busTrip.Id == id);
             if (busTrip != null)
             {
-                busTrip = _mapper.Map(busTripInputDTO, busTrip);
+                busTrip.Coordination = await _context.Coordinations.FindAsync(busTripInputDTO.CoordinationId);
+                string status = busTripInputDTO.Status.ToUpper();
+                if (status != "ACTIVE" && status != "INACTIVE")
+                    return null;
+                busTrip.Status = status;
                 _context.Update(busTrip);
                 await _context.SaveChangesAsync();
-
                 return _mapper.Map<BusTripDTO>(busTrip);
-
             }
             return null;
+        }
 
+        public async Task<bool> ChangeStatus(int id)
+        {
+            BusTrip? busTrip = await _context.BusTrips.Include(b => b.Coordination).FirstOrDefaultAsync(b => b.Id == id);
+            if (busTrip != null)
+            {
+                busTrip.Status = "ACTIVE";
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> Deactivate(int id)
+        {
+            BusTrip? busTrip = await _context.BusTrips.Include(b => b.Coordination).FirstOrDefaultAsync(b => b.Id == id);
+            if (busTrip != null)
+            {
+                busTrip.Status = "INACTIVE";
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
     }
 }
