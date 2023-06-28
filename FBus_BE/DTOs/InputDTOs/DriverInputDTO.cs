@@ -4,7 +4,6 @@ namespace FBus_BE.DTOs.InputDTOs
 {
     public class DriverInputDTO
     {
-        [Required]
         public string Email { get; set; }
         [Required]
         public string Code { get; set; }
