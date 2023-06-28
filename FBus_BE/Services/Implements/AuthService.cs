@@ -71,7 +71,9 @@ namespace FBus_BE.Services.Implements
                                 {
                                     AccessToken = token,
                                     Role = account.Role,
-                                    Code = account.Code
+                                    Code = account.Code,
+                                    Name = payload.Name,
+                                    Picture = payload.Picture
                                 };
                             }
                             break;
