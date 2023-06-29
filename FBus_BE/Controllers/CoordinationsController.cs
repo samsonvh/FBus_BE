@@ -1,4 +1,6 @@
-﻿using FBus_BE.DTOs.InputDTOs;
+﻿using FBus_BE.DTOs;
+using FBus_BE.DTOs.InputDTOs;
+using FBus_BE.DTOs.ListingDTOs;
 using FBus_BE.DTOs.PageRequests;
 using FBus_BE.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +20,7 @@ namespace FBus_BE.Controllers
             _coordinationService = coordinationService;
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CoordinationListingDTO))]
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetCoordinationList([FromQuery] CoordinationPageRequest pageRequest)
@@ -25,6 +28,7 @@ namespace FBus_BE.Controllers
             return Ok(await _coordinationService.GetCoordinationList(pageRequest));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CoordinationDTO))]
         [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCoordinationDetails([FromRoute] int id)
@@ -32,6 +36,7 @@ namespace FBus_BE.Controllers
             return Ok(await _coordinationService.GetCoordinationDetails(id));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CoordinationDTO))]
         [Authorize("AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CoordinationInputDTO coordinationInputDTO)
@@ -41,6 +46,7 @@ namespace FBus_BE.Controllers
             return Ok(await _coordinationService.Create(userId, coordinationInputDTO));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CoordinationDTO))]
         [Authorize("AdminOnly")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromForm] CoordinationInputDTO coordinationInputDTO)
@@ -50,6 +56,7 @@ namespace FBus_BE.Controllers
             return Ok(await _coordinationService.Update(userId, coordinationInputDTO, id));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
         [Authorize("AdminOnly")]
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] string status)
@@ -57,6 +64,7 @@ namespace FBus_BE.Controllers
             return Ok(await _coordinationService.ChangeStatus(id, status));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
         [Authorize("AdminOnly")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Deactivate([FromRoute] int id)

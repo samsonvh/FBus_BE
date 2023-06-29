@@ -1,4 +1,6 @@
-﻿using FBus_BE.DTOs.PageRequests;
+﻿using FBus_BE.DTOs;
+using FBus_BE.DTOs.PageRequests;
+using FBus_BE.DTOs.PageResponses;
 using FBus_BE.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +19,7 @@ namespace FBus_BE.Controllers
         }
 
         //[Authorize(Policy = "AdminOnly")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DefaultPageResponse<AccountDTO>))]
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAccountList([FromQuery] AccountPageRequest pageRequest)
@@ -24,6 +27,7 @@ namespace FBus_BE.Controllers
             return Ok(await _accountService.GetAccountList(pageRequest));
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountDTO))]
         [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetAccountDetail([FromRoute] int id)
