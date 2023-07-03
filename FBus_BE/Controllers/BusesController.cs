@@ -64,12 +64,12 @@ namespace FBus_BE.Controllers
             return Ok(await _busService.ChangeStatus(id, status));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-        [Authorize("AdminOnly")]
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Deactivate([FromRoute] int id)
-        {
-            return Ok(await _busService.Deactivate(id));
-        }
+        //[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        //[Authorize("AdminOnly")]
+        //[HttpDelete("{id:int}")]
+        //public async Task<IActionResult> Delete([FromRoute] int id)
+        //{
+        //    return Ok(await _busService.Delete(id));
+        //}
     }
 }
