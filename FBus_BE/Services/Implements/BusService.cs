@@ -43,22 +43,22 @@ namespace FBus_BE.Services.Implements
             }
             int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
             int totalCount = await _context.Buses
-                .Where(bus => pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
-                .Where(bus => pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                .Where(bus => (pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
+                                          || (pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true))
                 .CountAsync();
             if (totalCount > 0)
             {
-                List<BusListingDTO> buses = pageRequest.OrderBy == "desc"
+                List<BusListingDTO> buses = pageRequest.Direction == "desc"
                     ? await _context.Buses.Skip(skippedCount)
                                           .OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
-                                          .Where(bus => pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
-                                          .Where(bus => pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                                          .Where(bus => (pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
+                                          || (pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true))
                                           .Select(bus => _mapper.Map<BusListingDTO>(bus))
                                           .ToListAsync()
                     : await _context.Buses.Skip(skippedCount)
                                           .OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
-                                          .Where(bus => pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
-                                          .Where(bus => pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                                          .Where(bus => (pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
+                                          || (pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true))
                                           .Select(bus => _mapper.Map<BusListingDTO>(bus))
                                           .ToListAsync();
                 pageResponse.Data = buses;
@@ -93,7 +93,7 @@ namespace FBus_BE.Services.Implements
 
         public async Task<BusDTO> Update(int createdById, BusInputDTO busInputDTO, int id)
         {
-            Bus? bus = await _context.Buses.Include(bus => bus.CreatedBy).FirstOrDefaultAsync(bus => bus.Id ==id);
+            Bus? bus = await _context.Buses.Include(bus => bus.CreatedBy).FirstOrDefaultAsync(bus => bus.Id == id);
             if (bus != null)
             {
                 bus = _mapper.Map(busInputDTO, bus);
@@ -109,7 +109,7 @@ namespace FBus_BE.Services.Implements
 
         public async Task<bool> ChangeStatus(int id, string status)
         {
-            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id ==  id);
+            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id == id);
             if (bus != null)
             {
                 bus.Status = status;
@@ -120,17 +120,16 @@ namespace FBus_BE.Services.Implements
             return false;
         }
 
-        public async Task<bool> Deactivate(int id)
-        {
-            Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id == id);
-            if (bus != null)
-            {
-                bus.Status = "INACTIVE";
-                _context.Buses.Update(bus);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
-        }
+        //public async Task<bool> Deactivate(int id)
+        //{
+        //    Bus? bus = await _context.Buses.FirstOrDefaultAsync(bus => bus.Id == id);
+        //    if (bus != null)
+        //    {
+        //        _context.Buses.Remove(bus);
+        //        await _context.SaveChangesAsync();
+        //        return true;
+        //    }
+        //    return false;
+        //}
     }
 }
