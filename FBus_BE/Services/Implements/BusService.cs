@@ -44,7 +44,7 @@ namespace FBus_BE.Services.Implements
             int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
             int totalCount = await _context.Buses
                 .Where(bus => (pageRequest.Code != null && pageRequest.LicensePlate != null)
-                                ? (bus.Code.Contains(pageRequest.Code) && bus.LicensePlate.Contains(pageRequest.LicensePlate))
+                                ? (bus.Code.Contains(pageRequest.Code) || bus.LicensePlate.Contains(pageRequest.LicensePlate))
                                 : (pageRequest.Code != null && pageRequest.LicensePlate == null
                                     ? bus.Code.Contains(pageRequest.Code)
                                     : pageRequest.Code == null && pageRequest.LicensePlate != null
@@ -56,7 +56,7 @@ namespace FBus_BE.Services.Implements
                     ? await _context.Buses.OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
                                           .Skip(skippedCount)
                                           .Where(bus => (pageRequest.Code != null && pageRequest.LicensePlate != null)
-                                                        ? (bus.Code.Contains(pageRequest.Code) && bus.LicensePlate.Contains(pageRequest.LicensePlate))
+                                                        ? (bus.Code.Contains(pageRequest.Code) || bus.LicensePlate.Contains(pageRequest.LicensePlate))
                                                         : (pageRequest.Code != null && pageRequest.LicensePlate == null
                                                             ? bus.Code.Contains(pageRequest.Code)
                                                             : pageRequest.Code == null && pageRequest.LicensePlate != null
@@ -67,7 +67,7 @@ namespace FBus_BE.Services.Implements
                     : await _context.Buses.OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
                                           .Skip(skippedCount)
                                           .Where(bus => (pageRequest.Code != null && pageRequest.LicensePlate != null)
-                                                        ? (bus.Code.Contains(pageRequest.Code) && bus.LicensePlate.Contains(pageRequest.LicensePlate))
+                                                        ? (bus.Code.Contains(pageRequest.Code) || bus.LicensePlate.Contains(pageRequest.LicensePlate))
                                                         : (pageRequest.Code != null && pageRequest.LicensePlate == null
                                                             ? bus.Code.Contains(pageRequest.Code)
                                                             : pageRequest.Code == null && pageRequest.LicensePlate != null
