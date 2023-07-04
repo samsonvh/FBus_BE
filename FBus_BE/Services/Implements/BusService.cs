@@ -43,22 +43,36 @@ namespace FBus_BE.Services.Implements
             }
             int skippedCount = (int)((pageRequest.PageIndex - 1) * pageRequest.PageSize);
             int totalCount = await _context.Buses
-                .Where(bus => (pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
-                                          || (pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true))
-                .CountAsync();
+                .Where(bus => (pageRequest.Code != null && pageRequest.LicensePlate != null)
+                                ? (bus.Code.Contains(pageRequest.Code) && bus.LicensePlate.Contains(pageRequest.LicensePlate))
+                                : (pageRequest.Code != null && pageRequest.LicensePlate == null
+                                    ? bus.Code.Contains(pageRequest.Code)
+                                    : pageRequest.Code == null && pageRequest.LicensePlate != null
+                                        ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                ).CountAsync();
             if (totalCount > 0)
             {
                 List<BusListingDTO> buses = pageRequest.Direction == "desc"
-                    ? await _context.Buses.Skip(skippedCount)
-                                          .OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
-                                          .Where(bus => (pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
-                                          || (pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true))
+                    ? await _context.Buses.OrderByDescending(orderDict[pageRequest.OrderBy.ToLower()])
+                                          .Skip(skippedCount)
+                                          .Where(bus => (pageRequest.Code != null && pageRequest.LicensePlate != null)
+                                                        ? (bus.Code.Contains(pageRequest.Code) && bus.LicensePlate.Contains(pageRequest.LicensePlate))
+                                                        : (pageRequest.Code != null && pageRequest.LicensePlate == null
+                                                            ? bus.Code.Contains(pageRequest.Code)
+                                                            : pageRequest.Code == null && pageRequest.LicensePlate != null
+                                                                ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                )
                                           .Select(bus => _mapper.Map<BusListingDTO>(bus))
                                           .ToListAsync()
-                    : await _context.Buses.Skip(skippedCount)
-                                          .OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
-                                          .Where(bus => (pageRequest.Code != null ? bus.Code.Contains(pageRequest.Code) : true)
-                                          || (pageRequest.LicensePlate != null ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true))
+                    : await _context.Buses.OrderBy(orderDict[pageRequest.OrderBy.ToLower()])
+                                          .Skip(skippedCount)
+                                          .Where(bus => (pageRequest.Code != null && pageRequest.LicensePlate != null)
+                                                        ? (bus.Code.Contains(pageRequest.Code) && bus.LicensePlate.Contains(pageRequest.LicensePlate))
+                                                        : (pageRequest.Code != null && pageRequest.LicensePlate == null
+                                                            ? bus.Code.Contains(pageRequest.Code)
+                                                            : pageRequest.Code == null && pageRequest.LicensePlate != null
+                                                                ? bus.LicensePlate.Contains(pageRequest.LicensePlate) : true)
+                )
                                           .Select(bus => _mapper.Map<BusListingDTO>(bus))
                                           .ToListAsync();
                 pageResponse.Data = buses;
